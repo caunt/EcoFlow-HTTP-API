@@ -148,7 +148,7 @@ public class InternalMqttApi : IHostedService
                 updated = true;
             }
 
-            Console.WriteLine(updated ? $"🖥️Updated state for {serialNumber}" : $"⚠️ No devices found for update: {topic} at {DateTime.Now:hh:mm:ss} => {node}");
+            Console.WriteLine(updated ? $"🖥 Updated state for {serialNumber}" : $"⚠️ No devices found for update: {topic} at {DateTime.Now:hh:mm:ss} => {node}");
         }
         catch (Exception exception)
         {
