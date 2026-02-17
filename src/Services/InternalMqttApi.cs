@@ -3,10 +3,7 @@ using EcoFlow.Mqtt.Api.Models;
 using EcoFlow.Mqtt.Api.Session;
 using Microsoft.Extensions.Hosting;
 using MQTTnet;
-using MQTTnet.Client;
-using MQTTnet.Client.Options;
-using MQTTnet.Client.Receiving;
-using MQTTnet.Client.Subscribing;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
@@ -62,7 +59,7 @@ public class InternalMqttApi : IHostedService
                 optionsBuilder = optionsBuilder.WithClientId("github.com/caunt/EcoFlow-MQTT-API");
 
             if (mqttConfiguration.Tls)
-                optionsBuilder = optionsBuilder.WithTls(new MqttClientOptionsBuilderTlsParameters { UseTls = true });
+                optionsBuilder = optionsBuilder.WithTlsOptions(new MqttClientTlsOptions { UseTls = true });
 
             var options = optionsBuilder.Build();
             await state.Client.ConnectAsync(options);
@@ -89,10 +86,10 @@ public class InternalMqttApi : IHostedService
     {
         return _states.GetOrAdd(session, static (_, self) =>
         {
-            var mqttFactory = new MqttFactory();
-            var mqttClient = mqttFactory.CreateMqttClient();
+            var mqttClientFactory = new MqttClientFactory();
+            var mqttClient = mqttClientFactory.CreateMqttClient();
 
-            mqttClient.ApplicationMessageReceivedHandler = new MqttApplicationMessageReceivedHandlerDelegate(self.OnApplicationMessageReceived);
+            mqttClient.ApplicationMessageReceivedAsync += self.OnApplicationMessageReceived;
 
             return new MqttState(mqttClient, []);
         }, this);
@@ -157,7 +154,7 @@ public class InternalMqttApi : IHostedService
 
         return Task.CompletedTask;
 
-        static bool TryParse(byte[] bytes, [MaybeNullWhen(false)] out string value)
+        static bool TryParse(ReadOnlySequence<byte> bytes, [MaybeNullWhen(false)] out string value)
         {
             try
             {

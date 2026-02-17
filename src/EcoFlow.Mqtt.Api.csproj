@@ -8,9 +8,10 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-        <PackageReference Include="MQTTnet" Version="3.0.6"/>
-        <PackageReference Include="Nito.AsyncEx" Version="5.1.2"/>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Google.Protobuf" Version="3.33.5" />
+        <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
+        <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
     </ItemGroup>
 
 </Project>
