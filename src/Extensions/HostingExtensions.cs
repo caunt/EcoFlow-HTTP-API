@@ -59,7 +59,7 @@ public static class HostingExtensions
                 }
                 else
                 {
-                    configuration.Authentications = authentications.ToArray();
+                    configuration.Authentications = [..authentications];
                 }
             });
         }

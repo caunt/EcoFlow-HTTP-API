@@ -75,8 +75,8 @@ public class InternalHttpApi(IOptions<EcoFlowConfiguration> options, HttpClient 
                 JsonObject jsonObject => jsonObject.Select(category => category.Value?.AsObject()).WhereNotNull().SelectMany(devices => devices.Select(device => device.Key)),
                 _ => throw new DeviceListException($"Invalid device list received: {node}")
             };
-            
-            return devices.ToArray();
+
+            return [..devices];
         }   
     }
 
