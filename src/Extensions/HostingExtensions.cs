@@ -7,6 +7,8 @@ namespace EcoFlow.Mqtt.Api.Extensions;
 
 public static class HostingExtensions
 {
+    private const string EcoFlowPrefix = "ECOFLOW_";
+    
     extension(IServiceCollection services)
     {
         public IServiceCollection ConfigureAnonymousHttpClient()
@@ -52,7 +54,7 @@ public static class HostingExtensions
                 if (authentications.Count is 0)
                 {
                     Console.WriteLine("⚠️ No authentication method configured.");
-                    Console.WriteLine($"Set [{accessKeyEnvironmentVariable} and {secretKeyEnvironmentVariable}] or [{usernameEnvironmentVariable} and {passwordEnvironmentVariable}] environment variables.");
+                    Console.WriteLine($"Set [{EcoFlowPrefix + accessKeyEnvironmentVariable} and {EcoFlowPrefix + secretKeyEnvironmentVariable}] or [{EcoFlowPrefix + usernameEnvironmentVariable} and {EcoFlowPrefix + passwordEnvironmentVariable}] environment variables.");
                     Environment.Exit(1);
                 }
                 else
@@ -64,8 +66,7 @@ public static class HostingExtensions
     
         private static bool TryGetEnvironmentVariable(string name, [MaybeNullWhen(false)] out string value)
         {
-            const string prefix = "ECOFLOW_";
-            value = Environment.GetEnvironmentVariable(prefix + name);
+            value = Environment.GetEnvironmentVariable(EcoFlowPrefix + name);
             return value is not null;
         }
     }
