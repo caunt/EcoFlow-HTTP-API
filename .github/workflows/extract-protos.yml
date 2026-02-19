@@ -54,7 +54,6 @@ jobs:
 
       - name: Generate protos from descriptor set
         run: |
-            ( cd src/EcoFlow.Proto.Decoder && go mod init ecoflow-proto-decoder )
             ( cd src/EcoFlow.Proto.Decoder && go mod tidy )
             go run ./src/EcoFlow.Proto.Decoder file_descriptor_set.pb protos
 
