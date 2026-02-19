@@ -32,7 +32,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Publish container
-        run: dotnet publish -c Release /t:PublishContainer
+        run: dotnet publish src/EcoFlow.Mqtt.Api -c Release /t:PublishContainer
         env:
           ContainerRegistry: ghcr.io
           ContainerRepository: caunt/ecoflow-mqtt-api
