@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
 
-namespace EcoFlow.Mqtt.Api.Protobuf.Extraction;
+namespace EcoFlow.Proto.Exporter;
 
 public static class ProtosReader
 {

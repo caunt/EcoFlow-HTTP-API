@@ -1,4 +1,4 @@
-﻿using EcoFlow.Mqtt.Api.Protobuf.Extraction;
+﻿using EcoFlow.Proto.Exporter;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using System.CommandLine;

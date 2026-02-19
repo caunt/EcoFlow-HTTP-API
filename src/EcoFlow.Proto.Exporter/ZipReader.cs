@@ -1,6 +1,6 @@
 ﻿using System.IO.Compression;
 
-namespace EcoFlow.Mqtt.Api.Protobuf.Extraction;
+namespace EcoFlow.Proto.Exporter;
 
 public static class ZipReader
 {
