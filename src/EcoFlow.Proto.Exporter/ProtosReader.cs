@@ -135,7 +135,7 @@ public static class ProtosReader
                                 }
                             }
 
-                            yield return ParseStringBuilder(stringBuilder);
+                            yield return ParseStringBuilder(stringBuilder, typeIdRow.TypeDescriptor);
 
                             index = instructions.Length;
                             break;
@@ -163,7 +163,7 @@ public static class ProtosReader
                                 }
                             }
 
-                            yield return ParseStringBuilder(rangeStringBuilder);
+                            yield return ParseStringBuilder(rangeStringBuilder, typeIdRow.TypeDescriptor);
 
                             index = instructions.Length;
                             break;
@@ -172,10 +172,15 @@ public static class ProtosReader
             }
         }
 
-        static FileDescriptorProto ParseStringBuilder(StringBuilder stringBuilder)
+        static FileDescriptorProto ParseStringBuilder(StringBuilder stringBuilder, string? fallbackPackage = null)
         {
             var latin1bytes = Encoding.Latin1.GetBytes(stringBuilder.ToString());
-            return FileDescriptorProto.Parser.ParseFrom(latin1bytes);
+            var fileDescriptorProto = FileDescriptorProto.Parser.ParseFrom(latin1bytes);
+
+            if (!fileDescriptorProto.HasPackage && fallbackPackage is not null)
+                fileDescriptorProto.Package = fallbackPackage;
+
+            return fileDescriptorProto;
         }
     }
 }
