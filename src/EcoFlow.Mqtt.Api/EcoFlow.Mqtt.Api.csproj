@@ -14,8 +14,4 @@
         <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
     </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\external\ApkReader\ApkReader\ApkReader.csproj" />
-	</ItemGroup>
-
 </Project>

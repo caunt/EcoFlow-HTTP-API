@@ -124,6 +124,7 @@ public class InternalMqttApi : IHostedService
             if (!TryParse(eventArgs.ApplicationMessage.Payload, out var payload))
             {
                 Console.WriteLine($"⚠️ Binary payload received for {serialNumber}");
+                Console.WriteLine(Convert.ToHexString(eventArgs.ApplicationMessage.Payload.ToArray()));
                 return Task.CompletedTask;
             }
 
