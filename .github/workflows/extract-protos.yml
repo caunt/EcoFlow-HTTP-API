@@ -56,8 +56,9 @@ jobs:
 
       - name: Generate protos from descriptor set
         run: |
-            ( cd src/EcoFlow.Proto.Decoder && go mod tidy )
-            go run ./src/EcoFlow.Proto.Decoder file_descriptor_set.pb protos
+            cd src/EcoFlow.Proto.Decoder
+            go mod tidy
+            go run . ../../file_descriptor_set.pb ../../protos
 
       - name: Commit protos back to current branch
         run: |
