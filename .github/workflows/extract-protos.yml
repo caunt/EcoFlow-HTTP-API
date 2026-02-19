@@ -1,0 +1,74 @@
+name: Extract Protos
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+
+      - name: Install apkeep
+        run: cargo install apkeep
+
+      - name: Download APK
+        run: |
+          mkdir -p downloads
+          apkeep -a com.ecoflow downloads
+
+      - name: Run EcoFlow.Mqtt.Api over downloaded file
+        run: |
+          fileName="$(ls -1 downloads | head -n 1)"
+
+          if [ -z "$fileName" ]; then
+            echo "No file downloaded into ./downloads"
+            exit 1
+          fi
+
+          if [ "$(ls -1 downloads | wc -l)" -ne 1 ]; then
+            echo "Expected exactly 1 file in ./downloads, got:"
+            ls -la downloads
+            exit 1
+          fi
+
+          dotnet run --project src/EcoFlow.Proto.Exporter -i "downloads/$fileName" -o file_descriptor_set.pb
+
+      - name: Generate protos from descriptor set
+        run: go run src/EcoFlow.Proto.Decoder file_descriptor_set.pb protos
+
+      - name: Commit protos back to current branch
+        run: |
+          if [ -z "${GITHUB_REF_NAME}" ]; then
+            echo "GITHUB_REF_NAME is empty"
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add protos
+
+          if git diff --cached --quiet; then
+            echo "No changes in protos to commit"
+            exit 0
+          fi
+
+          git commit -m "Update protos"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
