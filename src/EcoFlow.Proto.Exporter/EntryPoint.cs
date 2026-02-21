@@ -3,6 +3,7 @@ using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using System.CommandLine;
 using System.Text;
+using System.Text.Json;
 
 Console.OutputEncoding = Encoding.UTF8;
 
@@ -29,15 +30,18 @@ rootCommand.SetAction(async (result, cancellationToken) =>
     var inputFileInfo = result.GetRequiredValue(inputFilePathOption);
     var outputFileInfo = result.GetRequiredValue(outputFilePathOption);
 
-    var fileDescriptorSet = new FileDescriptorSet();
-
-    await foreach (var fileDescriptorProto in ProtosReader.Enumerate(inputFileInfo.FullName, cancellationToken))
+    var set = await ProtosReader.GetProtoSetAsync(inputFileInfo.FullName, update =>
     {
-        Console.WriteLine($"Extracted proto: {fileDescriptorProto.Name}");
-        fileDescriptorSet.File.Add(fileDescriptorProto);
-    }
+        Console.WriteLine($"Extracted {update.FileDescriptorProto.Name}");
+        return update;
+    }, cancellationToken);
 
-    await File.WriteAllBytesAsync(outputFileInfo.FullName, fileDescriptorSet.ToByteArray(), cancellationToken);
+    await File.WriteAllBytesAsync(outputFileInfo.FullName, set.ToByteArray(), cancellationToken);
+    await File.WriteAllTextAsync("meta.json", JsonSerializer.Serialize(JsonDocument.Parse(JsonFormatter.ToDiagnosticString(set)).RootElement, new JsonSerializerOptions { WriteIndented = true }), cancellationToken);
+
+    var fileDescriptors = FileDescriptor.BuildFromByteStrings(set.File.Select(file => file.ToByteString()));
+    Console.WriteLine($"OK: built {fileDescriptors.Count} FileDescriptor(s), {fileDescriptors.CalculateMessageTypeCount()} MessageType(s).");
 });
 
 return await rootCommand.Parse(args).InvokeAsync();
+
