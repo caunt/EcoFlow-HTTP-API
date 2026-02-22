@@ -449,7 +449,7 @@ public static class ProtosReader
 
             if (!filesByNameGrouped.TryGetValue(currentFile.Name, out var groupList))
             {
-                groupList = new List<FileDescriptorProto>();
+                groupList = [];
                 filesByNameGrouped.Add(currentFile.Name, groupList);
                 originalIndexByNameGrouped.Add(currentFile.Name, fileIndex);
             }
@@ -488,7 +488,7 @@ public static class ProtosReader
 
                 if (!dependentsByDependencyName.TryGetValue(dependencyName, out var dependents))
                 {
-                    dependents = new List<string>();
+                    dependents = [];
                     dependentsByDependencyName.Add(dependencyName, dependents);
                 }
 
