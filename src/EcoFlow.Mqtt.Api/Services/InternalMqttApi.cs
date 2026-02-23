@@ -1,4 +1,5 @@
 using Ecoflow.Corebiz.Mqtt.Proto.Common;
+using Ecoflow.EnergyStorageModule.Proto.Pd335BmsBp;
 using EcoFlow.Mqtt.Api.Extensions;
 using EcoFlow.Mqtt.Api.Models;
 using EcoFlow.Mqtt.Api.Session;
@@ -6,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using MQTTnet;
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -26,7 +26,8 @@ public class InternalMqttApi : IHostedService
             {
                 return _states.Values
                     .SelectMany(state => state.Devices)
-                    .ToFrozenDictionary(devices => devices.Key, devices => devices.Value);
+                    .OrderBy(state => state.Key)
+                    .ToDictionary();
             }
         }
     }
@@ -122,23 +123,30 @@ public class InternalMqttApi : IHostedService
                 return Task.CompletedTask;
             }
 
-            if (!TryParse(eventArgs.ApplicationMessage.Payload, out var payload))
+            var nodes = new List<JsonNode>(1);
+
+            if (TryParse(eventArgs.ApplicationMessage.Payload, out var payload))
             {
-                Console.WriteLine($"⚠️ Binary payload received for {serialNumber}");
+                nodes.Add(JsonNode.Parse(payload) ?? throw new InvalidOperationException($"Failed to parse JSON payload: {payload}"));
+            }
+            else
+            {
                 var headers = Send_Header_Msg.Parser.ParseFrom(eventArgs.ApplicationMessage.Payload);
 
                 foreach (var header in headers.Decrypted)
                 {
                     var message = header.Pdata.AsEcoFlowMessage();
-                    Console.WriteLine(message.ToStringWithTitle());
+
+                    if (message is BMSHeartBeatReport)
+                        nodes.Add(message.ToJson());
+                    else
+                        Console.WriteLine($"⚠️ Unsupported binary message received from {serialNumber}: {message.ToStringWithTitle()}");
                 }
 
                 return Task.CompletedTask;
             }
 
-            var node = JsonNode.Parse(payload);
-
-            if (node is null)
+            if (nodes.Count is 0)
                 return Task.CompletedTask;
 
             var updated = false;
@@ -149,12 +157,15 @@ public class InternalMqttApi : IHostedService
                     continue;
 
                 lock (_states)
-                    MergeJsonNodes(device, node);
+                {
+                    foreach (var node in nodes)
+                        MergeJsonNodes(device, node);
+                }
 
                 updated = true;
             }
 
-            Console.WriteLine(updated ? $"🖥  Updated state for {serialNumber}" : $"⚠️ No devices found for update: {topic} at {DateTime.Now:hh:mm:ss} => {node}");
+            Console.WriteLine(updated ? $"🖥  Updated state for {serialNumber}" : $"⚠️ No devices found for update: {topic} at {DateTime.Now:hh:mm:ss} => {string.Join("\n", nodes)}");
         }
         catch (Exception exception)
         {
