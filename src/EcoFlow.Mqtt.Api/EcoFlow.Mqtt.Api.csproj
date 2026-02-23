@@ -20,6 +20,7 @@
 
 	<ItemGroup>
 		<Protobuf Include="../../protos/**/*.proto" Exclude="../../protos/google/protobuf/**/*.proto" ProtoRoot="../../protos/" />
+		<ProjectReference Include="../EcoFlow.Mqtt.Api.Analyzers/EcoFlow.Mqtt.Api.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 	
 </Project>
