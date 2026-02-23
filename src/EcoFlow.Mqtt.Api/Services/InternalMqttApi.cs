@@ -127,7 +127,7 @@ public class InternalMqttApi : IHostedService
 
             if (TryParse(eventArgs.ApplicationMessage.Payload, out var payload))
             {
-                nodes.Add(JsonNode.Parse(payload) ?? throw new InvalidOperationException($"Failed to parse JSON payload: {payload}"));
+                nodes.Add(JsonNode.Parse(payload)?["params"] ?? throw new InvalidOperationException($"Failed to parse JSON payload: {payload}"));
             }
             else
             {
@@ -135,15 +135,13 @@ public class InternalMqttApi : IHostedService
 
                 foreach (var header in headers.Decrypted)
                 {
-                    var message = header.Pdata.AsEcoFlowMessage();
+                    var message = header.Pdata.AsEcoFlowMessage(header.CmdFunc, header.CmdId);
 
                     if (message is BMSHeartBeatReport)
                         nodes.Add(message.ToJson());
                     else
                         Console.WriteLine($"⚠️ Unsupported binary message received from {serialNumber}: {message.ToStringWithTitle()}");
                 }
-
-                return Task.CompletedTask;
             }
 
             if (nodes.Count is 0)
