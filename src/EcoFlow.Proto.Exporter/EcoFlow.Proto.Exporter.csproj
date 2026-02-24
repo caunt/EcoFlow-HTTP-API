@@ -8,13 +8,10 @@
     </PropertyGroup>
     
     <ItemGroup>
+        <PackageReference Include="AlphaOmega.ApkReader" Version="2.0.10" />
         <PackageReference Include="Google.Protobuf" Version="3.33.5" />
         <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
         <PackageReference Include="System.CommandLine" Version="2.0.3" />
     </ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\..\external\ApkReader\ApkReader\ApkReader.csproj" />
-	</ItemGroup>
 	
 </Project>
