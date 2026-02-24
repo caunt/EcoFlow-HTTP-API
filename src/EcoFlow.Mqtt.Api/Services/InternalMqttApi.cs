@@ -23,7 +23,7 @@ public class InternalMqttApi : IHostedService
         {
             lock (_states)
             {
-                return new ConcurrentDictionary<string, JsonNode>(_states.Values
+                return new OrderedDictionary<string, JsonNode>(_states.Values
                     .SelectMany(state => state.Devices)
                     .OrderBy(state => state.Key));
             }
