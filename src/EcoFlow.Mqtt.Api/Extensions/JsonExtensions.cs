@@ -40,6 +40,30 @@ public static class JsonExtensions
             }
         }
 
+        public void MergeWith(JsonNode nextNode)
+        {
+            if (node is not JsonObject previousObject || nextNode is not JsonObject nextObject)
+                return;
+
+            foreach (var nextProperty in nextObject)
+            {
+                var previousProperty = previousObject[nextProperty.Key];
+
+                if (previousProperty is JsonObject && nextProperty.Value is JsonObject)
+                {
+                    node.MergeWith(nextProperty.Value);
+                }
+                else
+                {
+                    var clonedNode = nextProperty.Value?.DeepClone();
+                    clonedNode.Sort();
+
+                    previousObject[nextProperty.Key] = clonedNode;
+                    previousObject.Sort();
+                }
+            }
+        }
+
         public IEnumerable<string> Flatten(string keySeparator = ".", string arrayFormat = "[{0}]")
         {
             foreach (var flattenedLine in Walk(node, string.Empty))

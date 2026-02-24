@@ -152,13 +152,13 @@ public class InternalMqttApi : IHostedService
 
             foreach (var state in _states.Values)
             {
-                if (!state.Devices.TryGetValue(serialNumber, out var device))
+                if (!state.Devices.TryGetValue(serialNumber, out var deviceNode))
                     continue;
 
                 lock (_states)
                 {
                     foreach (var node in nodes)
-                        MergeJsonNodes(device, node);
+                        deviceNode.MergeWith(node);
                 }
 
                 updated = true;
@@ -184,30 +184,6 @@ public class InternalMqttApi : IHostedService
             {
                 value = null;
                 return false;
-            }
-        }
-
-        static void MergeJsonNodes(JsonNode previousNode, JsonNode nextNode)
-        {
-            if (previousNode is not JsonObject previousObject || nextNode is not JsonObject nextObject)
-                return;
-
-            foreach (var nextProperty in nextObject)
-            {
-                var previousProperty = previousObject[nextProperty.Key];
-
-                if (previousProperty is JsonObject && nextProperty.Value is JsonObject)
-                {
-                    MergeJsonNodes(previousProperty, nextProperty.Value);
-                }
-                else
-                {
-                    var clonedNode = nextProperty.Value?.DeepClone();
-                    clonedNode.Sort();
-
-                    previousObject[nextProperty.Key] = clonedNode;
-                    previousObject.Sort();
-                }
             }
         }
     }
