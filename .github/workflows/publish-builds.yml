@@ -21,10 +21,6 @@ jobs:
           - operatingSystem: ubuntu-24.04-arm
             runtimeIdentifier: linux-arm64
           - operatingSystem: ubuntu-24.04-arm
-            runtimeIdentifier: linux-bionic-arm64
-          - operatingSystem: ubuntu-latest
-            runtimeIdentifier: linux-bionic-x64
-          - operatingSystem: ubuntu-24.04-arm
             runtimeIdentifier: linux-musl-arm
           - operatingSystem: ubuntu-24.04-arm
             runtimeIdentifier: linux-musl-arm64
@@ -54,7 +50,14 @@ jobs:
 
       - name: Install Linux Prerequisites
         if: startsWith(matrix.operatingSystem, 'ubuntu')
-        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev protobuf-compiler
+
+      - name: Set Protoc Argument For Linux
+        if: startsWith(matrix.operatingSystem, 'ubuntu')
+        run: echo "PROTOC_BUILD_ARGUMENT=-p:Protobuf_ProtocFullPath=/usr/bin/protoc" >> $GITHUB_ENV
+
+      - name: Publish Application
+        run: dotnet publish src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj -c Release -r ${{ matrix.runtimeIdentifier }} -o ./publish-output/${{ matrix.runtimeIdentifier }} ${{ env.PROTOC_BUILD_ARGUMENT }}
 
       - name: Publish Application
         run: dotnet publish src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj -c Release -r ${{ matrix.runtimeIdentifier }} -o ./publish/${{ matrix.runtimeIdentifier }}
