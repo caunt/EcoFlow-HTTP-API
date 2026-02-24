@@ -112,8 +112,6 @@ jobs:
   publish_alpine_musl:
     name: Publish ${{ matrix.runtimeIdentifier }}
     runs-on: ${{ matrix.operatingSystem }}
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:10.0-alpine
     strategy:
       fail-fast: false
       matrix:
@@ -126,11 +124,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v6
 
-      - name: Install Alpine Prerequisites
-        run: apk add --no-cache clang build-base zlib-dev protoc grpc-plugins
-
       - name: Publish Application
-        run: dotnet publish src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj -c Release -r ${{ matrix.runtimeIdentifier }} -o ./publish/${{ matrix.runtimeIdentifier }} -p:Protobuf_ProtocFullPath=/usr/bin/protoc -p:gRPC_PluginFullPath=/usr/bin/grpc_csharp_plugin
+        run: |
+          docker run --rm \
+            --volume "${{ github.workspace }}:/workspace" \
+            --workdir /workspace \
+            mcr.microsoft.com/dotnet/sdk:10.0-alpine \
+            sh -c "apk add --no-cache clang build-base zlib-dev protoc grpc-plugins && \
+                   dotnet publish src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj \
+                   -c Release \
+                   -r ${{ matrix.runtimeIdentifier }} \
+                   -o ./publish/${{ matrix.runtimeIdentifier }} \
+                   -p:Protobuf_ProtocFullPath=/usr/bin/protoc \
+                   -p:gRPC_PluginFullPath=/usr/bin/grpc_csharp_plugin"
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v6
