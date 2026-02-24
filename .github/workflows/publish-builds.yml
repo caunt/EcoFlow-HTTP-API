@@ -34,7 +34,7 @@ jobs:
             runtimeIdentifier: linux-x64
           - operatingSystem: macos-latest
             runtimeIdentifier: osx-arm64
-          - operatingSystem: macos-13
+          - operatingSystem: macos-15-intel
             runtimeIdentifier: osx-x64
           - operatingSystem: windows-latest
             runtimeIdentifier: win-arm64
