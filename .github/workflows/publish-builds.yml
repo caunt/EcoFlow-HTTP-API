@@ -5,6 +5,12 @@ on:
     branches: [ main ]
   release:
     types: [ created ]
+  workflow_run:
+    workflows: ["Extract Protos"]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
   publish:
