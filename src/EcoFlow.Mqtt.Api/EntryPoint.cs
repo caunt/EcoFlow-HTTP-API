@@ -24,7 +24,10 @@ builder.Services.ConfigureEcoFlowEndpoints();
 builder.Services.ConfigureEcoFlowAuthentication(errorHandler: () =>
 {
     if (OperatingSystem.IsWindows())
+    {
+        Console.WriteLine("Press any key to exit.");
         Console.ReadLine();
+    }
 
     Environment.Exit(1);
 });
