@@ -23,26 +23,123 @@ concurrency:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.operatingSystem }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { operatingSystem: ubuntu-latest, runtimeIdentifier: linux-x64, tagSuffix: linux-x64, isAlpine: false }
+          - { operatingSystem: ubuntu-24.04-arm, runtimeIdentifier: linux-arm64, tagSuffix: linux-arm64, isAlpine: false }
+          - { operatingSystem: ubuntu-24.04-arm, runtimeIdentifier: linux-arm, tagSuffix: linux-arm, isAlpine: false }
+          - { operatingSystem: ubuntu-latest, runtimeIdentifier: linux-musl-x64, tagSuffix: alpine-x64, isAlpine: true }
+          - { operatingSystem: ubuntu-24.04-arm, runtimeIdentifier: linux-musl-arm64, tagSuffix: alpine-arm64, isAlpine: true }
+          - { operatingSystem: windows-latest, runtimeIdentifier: win-x64, tagSuffix: windows, isAlpine: false }
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v6
         with:
           submodules: true
 
       - name: Setup .NET
+        if: ${{ !matrix.isAlpine }}
         uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10'
 
-      - name: Restore
-        run: dotnet restore
+      - name: Restore Dependencies
+        if: ${{ !matrix.isAlpine }}
+        run: dotnet restore src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj
 
       - name: Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: Publish container
-        run: dotnet publish src/EcoFlow.Mqtt.Api -c Release /t:PublishContainer
+      - name: Install Linux Prerequisites
+        if: ${{ runner.os == 'Linux' && !matrix.isAlpine }}
+        run: |
+          sudo apt-get update
+          
+          if [ "${{ matrix.runtimeIdentifier }}" = "linux-arm" ]; then
+            sudo dpkg --add-architecture armhf
+            sudo apt-get update
+            sudo apt-get install -y clang zlib1g-dev protobuf-compiler libc6-dev:armhf libstdc++-13-dev:armhf gcc-arm-linux-gnueabihf
+          else
+            sudo apt-get install -y clang zlib1g-dev protobuf-compiler
+          fi
+          
+          echo "PROTOC_BUILD_ARGUMENT=-p:Protobuf_ProtocFullPath=/usr/bin/protoc" >> $GITHUB_ENV
+
+      - name: Publish Container (Host)
+        if: ${{ !matrix.isAlpine }}
+        shell: bash
         env:
           ContainerRegistry: ghcr.io
           ContainerRepository: caunt/ecoflow-mqtt-api
           ContainerPort: 8080
+          MSYS_NO_PATHCONV: 1
+          MSYS2_ARG_CONV_EXCL: '*'
+        run: |
+          imageTags="latest-${{ matrix.tagSuffix }}"
+          
+          publishArguments=(
+            "src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj"
+            "-c" "Release"
+            "/t:PublishContainer"
+            "/p:RuntimeIdentifier=${{ matrix.runtimeIdentifier }}"
+            "/p:ContainerImageTags=$imageTags"
+          )
+          
+          if [ -n "$PROTOC_BUILD_ARGUMENT" ]; then
+            publishArguments+=("$PROTOC_BUILD_ARGUMENT")
+          fi
+          
+          dotnet publish "${publishArguments[@]}"
+
+      - name: Publish Container (Alpine)
+        if: ${{ matrix.isAlpine }}
+        shell: bash
+        env:
+          ContainerRegistry: ghcr.io
+          ContainerRepository: caunt/ecoflow-mqtt-api
+          ContainerPort: 8080
+        run: |
+          imageTags="latest-${{ matrix.tagSuffix }}"
+          
+          docker run --rm \
+            --volume "${{ github.workspace }}:/workspace" \
+            --volume "$HOME/.docker:/root/.docker:ro" \
+            --workdir /workspace \
+            --env ContainerRegistry="$ContainerRegistry" \
+            --env ContainerRepository="$ContainerRepository" \
+            --env ContainerPort="$ContainerPort" \
+            mcr.microsoft.com/dotnet/sdk:10.0-alpine \
+            sh -c "apk add --no-cache clang build-base zlib-dev protoc grpc-plugins && \
+                   dotnet restore src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj && \
+                   dotnet publish src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj \
+                   -c Release \
+                   /t:PublishContainer \
+                   /p:RuntimeIdentifier=\"${{ matrix.runtimeIdentifier }}\" \
+                   /p:ContainerImageTags=\"$imageTags\" \
+                   -p:Protobuf_ProtocFullPath=/usr/bin/protoc \
+                   -p:gRPC_PluginFullPath=/usr/bin/grpc_csharp_plugin"
+
+  create-manifest:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Create and Push Manifest
+        env:
+          targetRepository: ghcr.io/caunt/ecoflow-mqtt-api
+        run: |
+          docker manifest create $targetRepository:latest \
+            $targetRepository:latest-linux-x64 \
+            $targetRepository:latest-linux-arm64 \
+            $targetRepository:latest-linux-arm \
+            $targetRepository:latest-alpine-x64 \
+            $targetRepository:latest-alpine-arm64 \
+            $targetRepository:latest-windows
+            
+          docker manifest push $targetRepository:latest
