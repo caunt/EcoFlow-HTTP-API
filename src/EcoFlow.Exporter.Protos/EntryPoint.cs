@@ -1,4 +1,4 @@
-﻿using EcoFlow.Proto.Exporter;
+﻿using EcoFlow.Exporter.Protos;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using System.CommandLine;

@@ -54,7 +54,7 @@ jobs:
             exit 1
           fi
 
-          dotnet run --project src/EcoFlow.Proto.Exporter -i "downloads/$fileName" -o file_descriptor_set.pb
+          dotnet run --project src/EcoFlow.Exporter.Protos -i "downloads/$fileName" -o file_descriptor_set.pb
 
       - name: Generate protos from descriptor set
         run: |

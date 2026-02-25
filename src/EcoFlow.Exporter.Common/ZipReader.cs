@@ -1,6 +1,6 @@
 ﻿using System.IO.Compression;
 
-namespace EcoFlow.Proto.Exporter;
+namespace EcoFlow.Exporter.Common;
 
 public static class ZipReader
 {

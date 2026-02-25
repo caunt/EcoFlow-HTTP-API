@@ -1,11 +1,12 @@
 ﻿using AlphaOmega.Debug;
+using EcoFlow.Exporter.Common;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Channels;
 
-namespace EcoFlow.Proto.Exporter;
+namespace EcoFlow.Exporter.Protos;
 
 public static class ProtosReader
 {
@@ -442,9 +443,7 @@ public static class ProtosReader
         foreach (var (fileIndex, currentFile) in filesList.Index())
         {
             if (string.IsNullOrEmpty(currentFile.Name))
-            {
                 throw new InvalidOperationException("FileDescriptorProto.Name must be set for dependency sorting.");
-            }
 
             if (!filesByNameGrouped.TryGetValue(currentFile.Name, out var groupList))
             {
@@ -460,9 +459,7 @@ public static class ProtosReader
         var inDegreeByNameGroup = new Dictionary<string, int>(StringComparer.Ordinal);
 
         foreach (var nameGroup in filesByNameGrouped)
-        {
             inDegreeByNameGroup.Add(nameGroup.Key, 0);
-        }
 
         foreach (var nameGroup in filesByNameGrouped)
         {
@@ -476,14 +473,10 @@ public static class ProtosReader
             foreach (var dependencyName in uniqueDependencies)
             {
                 if (string.Equals(dependencyName, currentGroupName, StringComparison.Ordinal))
-                {
                     continue;
-                }
 
                 if (!filesByNameGrouped.ContainsKey(dependencyName))
-                {
                     throw new InvalidOperationException($"Missing dependency '{dependencyName}' referenced by a file named '{currentGroupName}'.");
-                }
 
                 if (!dependentsByDependencyName.TryGetValue(dependencyName, out var dependents))
                 {
@@ -500,10 +493,10 @@ public static class ProtosReader
 
         foreach (var inDegreePair in inDegreeByNameGroup)
         {
-            if (inDegreePair.Value == 0)
-            {
-                readyQueue.Enqueue(inDegreePair.Key, originalIndexByNameGrouped[inDegreePair.Key]);
-            }
+            if (inDegreePair.Value is not 0)
+                continue;
+
+            readyQueue.Enqueue(inDegreePair.Key, originalIndexByNameGrouped[inDegreePair.Key]);
         }
 
         var processedGroupCount = 0;
@@ -520,18 +513,16 @@ public static class ProtosReader
             }
 
             if (!dependentsByDependencyName.TryGetValue(currentGroupName, out var dependents))
-            {
                 continue;
-            }
 
             foreach (var dependentName in dependents)
             {
                 inDegreeByNameGroup[dependentName]--;
 
-                if (inDegreeByNameGroup[dependentName] == 0)
-                {
-                    readyQueue.Enqueue(dependentName, originalIndexByNameGrouped[dependentName]);
-                }
+                if (inDegreeByNameGroup[dependentName] is not 0)
+                    continue;
+
+                readyQueue.Enqueue(dependentName, originalIndexByNameGrouped[dependentName]);
             }
         }
 
@@ -558,24 +549,17 @@ public static class ProtosReader
                 var currentMessage = targetMessages[messageIndex];
 
                 if (string.IsNullOrEmpty(currentMessage.Name))
-                {
                     throw new InvalidOperationException("DescriptorProto.Name must be set for dependency sorting.");
-                }
 
-                if (!messagesByName.ContainsKey(currentMessage.Name))
-                {
-                    messagesByName.Add(currentMessage.Name, currentMessage);
+                if (messagesByName.TryAdd(currentMessage.Name, currentMessage))
                     originalIndexByName.Add(currentMessage.Name, messageIndex);
-                }
             }
 
             var dependentsByDependencyName = new Dictionary<string, List<string>>(StringComparer.Ordinal);
             var inDegreeByName = new Dictionary<string, int>(StringComparer.Ordinal);
 
             foreach (var namePair in messagesByName)
-            {
                 inDegreeByName.Add(namePair.Key, 0);
-            }
 
             foreach (var namePair in messagesByName)
             {
@@ -590,8 +574,7 @@ public static class ProtosReader
                     {
                         foreach (var knownMessageName in messagesByName.Keys)
                         {
-                            if (string.Equals(currentField.TypeName, knownMessageName, StringComparison.Ordinal) ||
-                                currentField.TypeName.EndsWith("." + knownMessageName, StringComparison.Ordinal))
+                            if (string.Equals(currentField.TypeName, knownMessageName, StringComparison.Ordinal) || currentField.TypeName.EndsWith("." + knownMessageName, StringComparison.Ordinal))
                             {
                                 uniqueDependencies.Add(knownMessageName);
                             }
@@ -602,13 +585,11 @@ public static class ProtosReader
                 foreach (var dependencyName in uniqueDependencies)
                 {
                     if (string.Equals(dependencyName, currentMessageName, StringComparison.Ordinal))
-                    {
                         continue;
-                    }
 
                     if (!dependentsByDependencyName.TryGetValue(dependencyName, out var dependents))
                     {
-                        dependents = new List<string>();
+                        dependents = [];
                         dependentsByDependencyName.Add(dependencyName, dependents);
                     }
 
@@ -621,10 +602,10 @@ public static class ProtosReader
 
             foreach (var inDegreePair in inDegreeByName)
             {
-                if (inDegreePair.Value == 0)
-                {
-                    readyQueue.Enqueue(inDegreePair.Key, originalIndexByName[inDegreePair.Key]);
-                }
+                if (inDegreePair.Value is not 0)
+                    continue;
+
+                readyQueue.Enqueue(inDegreePair.Key, originalIndexByName[inDegreePair.Key]);
             }
 
             var sortedMessages = new List<DescriptorProto>(targetMessages.Count);
@@ -656,9 +637,7 @@ public static class ProtosReader
                 inDegreeByName[currentMessageName] = 0;
 
                 if (!dependentsByDependencyName.TryGetValue(currentMessageName, out var dependents))
-                {
                     continue;
-                }
 
                 foreach (var dependentName in dependents)
                 {
@@ -666,18 +645,16 @@ public static class ProtosReader
                     {
                         inDegreeByName[dependentName]--;
 
-                        if (inDegreeByName[dependentName] == 0)
-                        {
-                            readyQueue.Enqueue(dependentName, originalIndexByName[dependentName]);
-                        }
+                        if (inDegreeByName[dependentName] is not 0)
+                            continue;
+
+                        readyQueue.Enqueue(dependentName, originalIndexByName[dependentName]);
                     }
                 }
             }
 
             for (var writeIndex = 0; writeIndex < sortedMessages.Count; writeIndex++)
-            {
                 targetMessages[writeIndex] = sortedMessages[writeIndex];
-            }
         }
     }
 }

@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="AlphaOmega.ApkReader" Version="2.0.10" />
+        <PackageReference Include="Google.Protobuf" Version="3.33.5" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\EcoFlow.Exporter.Common\EcoFlow.Exporter.Common.csproj" />
+    </ItemGroup>
+	
+</Project>
