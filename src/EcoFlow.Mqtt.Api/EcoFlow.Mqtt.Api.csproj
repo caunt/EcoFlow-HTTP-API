@@ -8,6 +8,18 @@
     </PropertyGroup>
 
 	<PropertyGroup>
+		<OptimizationPreference>Size</OptimizationPreference>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<StackTraceSupport>false</StackTraceSupport>
+		<DebuggerSupport>false</DebuggerSupport>
+		<EventSourceSupport>false</EventSourceSupport>
+		<HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+		<MetricsSupport>false</MetricsSupport>
+		<UseSystemResourceKeys>true</UseSystemResourceKeys>
+		<StripSymbols>true</StripSymbols>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<PublishAot>true</PublishAot>
 		<PublishIISAssets>false</PublishIISAssets>
 		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
