@@ -33,7 +33,7 @@ jobs:
           - { operatingSystem: ubuntu-24.04-arm, runtimeIdentifier: linux-arm, tagSuffix: linux-arm, isAlpine: false }
           - { operatingSystem: ubuntu-latest, runtimeIdentifier: linux-musl-x64, tagSuffix: alpine-x64, isAlpine: true }
           - { operatingSystem: ubuntu-24.04-arm, runtimeIdentifier: linux-musl-arm64, tagSuffix: alpine-arm64, isAlpine: true }
-          - { operatingSystem: windows-latest, runtimeIdentifier: win-x64, tagSuffix: windows, isAlpine: false }
+          - { operatingSystem: windows-latest, runtimeIdentifier: win-x64, tagSuffix: windows, isAlpine: false, baseImage: 'mcr.microsoft.com/dotnet/runtime:10.0-nanoserver-ltsc2025' }
 
     steps:
       - name: Checkout Repository
@@ -80,6 +80,7 @@ jobs:
           MSYS2_ARG_CONV_EXCL: '*'
         run: |
           imageTags="latest-${{ matrix.tagSuffix }}"
+          targetBaseImage="${{ matrix.baseImage }}"
           
           publishArguments=(
             "src/EcoFlow.Mqtt.Api/EcoFlow.Mqtt.Api.csproj"
@@ -88,6 +89,10 @@ jobs:
             "/p:RuntimeIdentifier=${{ matrix.runtimeIdentifier }}"
             "/p:ContainerImageTags=$imageTags"
           )
+          
+          if [ -n "$targetBaseImage" ]; then
+            publishArguments+=("/p:ContainerBaseImage=$targetBaseImage")
+          fi
           
           if [ -n "$PROTOC_BUILD_ARGUMENT" ]; then
             publishArguments+=("$PROTOC_BUILD_ARGUMENT")
