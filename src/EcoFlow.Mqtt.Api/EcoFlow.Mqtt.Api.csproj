@@ -17,6 +17,9 @@
 		<MetricsSupport>false</MetricsSupport>
 		<UseSystemResourceKeys>true</UseSystemResourceKeys>
 		<StripSymbols>true</StripSymbols>
+		<IlcGenerateCompleteTypeMetadata>false</IlcGenerateCompleteTypeMetadata>
+		<IlcFoldSafeCast>true</IlcFoldSafeCast>
+		<TrimmerDefaultAction>link</TrimmerDefaultAction>
 	</PropertyGroup>
 
 	<PropertyGroup>
