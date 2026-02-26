@@ -7,89 +7,9 @@
 
 Exposes EcoFlow devices status as HTTP API.
 
----
+### :floppy_disk: **Download:**
+&nbsp;&nbsp;&nbsp;&nbsp; :star: [**Latest Release**](https://github.com/caunt/EcoFlow-MQTT-API/releases/latest)  
+&nbsp;&nbsp;&nbsp;&nbsp; :whale: [**Docker Image**](https://github.com/caunt/EcoFlow-MQTT-API/wiki#run-with-docker)
 
-## 📥 Installation
-
-Download the latest binary from the [releases page](https://github.com/caunt/EcoFlow-MQTT-API/releases/latest).
-
-| OS | x64 | arm64 | x86 | arm |
-|:--:|:---:|:-----:|:---:|:---:|
-| 🪟 Windows             | ✅ | ✅ | ✅ | 🚫 |
-| 🍏 macOS               | ✅ | ✅ | 🚫 | 🚫 |
-| 🐧 Linux (glibc)       | ✅ | ✅ | 🚫 | ✅ |
-| 🐧 Linux (musl/Alpine) | ✅ | ✅ | 🚫 | 🚫 |
-
----
-
-## 🚀 Usage
-
-### 🐳 Docker
-
-```sh
-docker run --rm --pull=always \
-  -e ECOFLOW_USERNAME=you@example.com \
-  -e ECOFLOW_PASSWORD=your_password \
-  -p 8080:8080 \
-  ghcr.io/caunt/ecoflow-mqtt-api
-```
-
-### 💾 Binary
-
-```sh
-ECOFLOW_USERNAME="you@example.com" ECOFLOW_PASSWORD="your_password" ./EcoFlow.Mqtt.Api
-```
-
----
-
-## 🔐 Configuration
-
-Set environment variables to configure.
-
-### ⚠️ Required
-#### Authentication
-
-Choose **one**:
-
-| Method | Variables |
-|--------|-----------|
-| 📱 **App** *(preferred)* | `ECOFLOW_USERNAME` + `ECOFLOW_PASSWORD` |
-| 🔑 **Open API** | `ECOFLOW_ACCESS_KEY` + `ECOFLOW_SECRET_KEY` |
-
-### Optional
-#### Logging
-
-| Variable | Default | Example |
-|----------|---------|---------|
-| `ECOFLOW_VERBOSE_LOGGING` | `false` | `true` |
-
-#### Polling
-
-| Variable | Default | Example |
-|----------|---------|---------|
-| `ECOFLOW_POLLING_INTERVAL_SECONDS` | `15` | `-1` |
-
-#### EcoFlow
-
-| Variable | Default |
-|----------|---------|
-| `ECOFLOW_APP_API_URI` | `https://api.ecoflow.com` |
-| `ECOFLOW_OPEN_API_URI` | `https://api-e.ecoflow.com` |
-
-#### Web Server
-
-| Variable | Default | Example |
-|----------|---------|---------|
-| `URLS` | `http://localhost:8080;` | `http://*:8080;` |
-| `HTTP_PORTS` | `‎ ` | `8080;` |
-
----
-
-## 🌐 API
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /` | All devices |
-| `GET /{serialNumber}` | Single device |
-
-Add `?flat` for plain-text `key=value` output.
+### :memo: Getting Started:
+&nbsp;&nbsp;&nbsp;&nbsp; :globe_with_meridians: [Wiki](https://github.com/caunt/EcoFlow-MQTT-API/wiki)
