@@ -86,4 +86,6 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.rid }}
-          path: ./publish/${{ matrix.rid }}
+          path: |
+            ./publish/${{ matrix.rid }}
+            !./publish/${{ matrix.rid }}/**/*.pdb

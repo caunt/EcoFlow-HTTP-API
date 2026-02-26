@@ -1,0 +1,52 @@
+name: Create Latest Release
+
+on:
+  workflow_run:
+    workflows: ["Publish Builds"]
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v6
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./artifacts
+
+      - name: Archive Artifacts
+        run: |
+          for dir in artifacts/*/; do
+            rid="$(basename "$dir")"
+            (cd "$dir" && zip -r "../${rid}.zip" .)
+          done
+
+      - name: Delete Existing Latest Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view latest --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            gh release delete latest --repo "${{ github.repository }}" --yes
+          fi
+          gh api --method DELETE "repos/${{ github.repository }}/git/refs/tags/latest" 2>/dev/null || true
+
+      - name: Create Latest Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create latest artifacts/*.zip \
+            --repo "${{ github.repository }}" \
+            --title "Latest" \
+            --notes "Latest build from the main branch." \
+            --target "${{ github.event.workflow_run.head_sha }}" \
+            --latest
