@@ -182,6 +182,22 @@ message EDevPileDebugInfo {
   optional uint32 phase_req = 2;
 }
 
+message EDevOCPPParmSet {
+  optional string device_id = 1;
+
+  optional string url = 2;
+
+  optional string vendor = 3;
+
+  optional string cpo_name = 4;
+
+  optional uint32 profile = 5;
+
+  optional string auth_key = 6;
+
+  optional uint32 ocpp_enable = 7;
+}
+
 message SmartModeParameter {
   optional uint32 time_to_use_car = 1;
 
@@ -206,6 +222,8 @@ message EDevPileParamSet {
   optional uint32 user_current_set = 6;
 
   optional SmartModeParameter smart_mode = 7;
+
+  optional EDevOCPPParmSet ocpp_paramset = 8;
 
   optional bytes ext_param = 21;
 }
@@ -246,6 +264,8 @@ message EDevPileChargingParamReport {
   repeated EDevPileVoltCurrInfo volt_curr = 9;
 
   optional uint32 grid_phase_input = 10;
+
+  optional uint32 ocpp_ctrl = 12;
 
   optional EDevPileDebugInfo dbg_info = 21;
 }
@@ -323,6 +343,8 @@ message PileRemoteParamSet {
 
   optional bytes ext_param = 21;
 
+  optional EDevOCPPParmSet ocpp_paramset = 9;
+
   optional SmartModeParameter smart_info = 31;
 }
 
@@ -342,6 +364,8 @@ message EDevPileChargingRunData {
   optional bytes error_code = 7;
 
   optional PileRemoteParamSet param_set = 8;
+
+  optional EDevOCPPParmSet ocpp_paramset = 16;
 }
 
 message EDevRunData {

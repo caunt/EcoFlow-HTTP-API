@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ecoflow.common.proto.BkSeries;
+package ecoflow.energyStorageModule.proto.BkSeries;
 
 option java_package = "com.ecoflow.common.proto";
 

@@ -110,6 +110,10 @@ message CardWhiteListItem {
   string card_name = 5;
 
   uint32 card_type = 6;
+
+  optional string vehicle_id = 7;
+
+  optional uint32 vehicle_comsumption = 8;
 }
 
 message SmartModeParameter {

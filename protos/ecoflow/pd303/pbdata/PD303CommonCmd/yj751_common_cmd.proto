@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ecoflow.common.proto.Yj751CommonCmd;
+package ecoflow.pd303.pbdata.PD303CommonCmd;
 
 enum CmdSets {
   STAND_PROTOCOL_CMD_SET_NONE = 0;

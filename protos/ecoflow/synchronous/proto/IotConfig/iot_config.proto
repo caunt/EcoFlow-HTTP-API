@@ -19,3 +19,11 @@ message CfgNetDeviceList {
 
   optional ShareCfgNetInfo share_cfg_net_info = 2;
 }
+
+message UserInfo {
+  string user_id = 1;
+}
+
+message UserInfoAck {
+  uint32 ret = 1;
+}

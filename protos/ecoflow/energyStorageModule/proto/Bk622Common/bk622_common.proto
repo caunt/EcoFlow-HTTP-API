@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ecoflow.common.proto.Bk622Common;
+package ecoflow.energyStorageModule.proto.Bk622Common;
 
 message EventPush {
   uint32 event_ver = 1;

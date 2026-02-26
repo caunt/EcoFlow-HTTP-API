@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.pd303.pbdata.Pd303;
 
+option java_package = "com.ecoflow.pd303.pbdata";
+
 message RtcHalData {
   uint32 week = 1;
 
@@ -1662,6 +1664,10 @@ enum EDEV_STA {
   EDEV_EV_ERR = 3;
 
   EDEV_NO_PLUG = 4;
+
+  pd303_EDEV_STA_EDEV_EV_PAUSE = 5;
+
+  pd303_EDEV_STA_EDEV_EV_UNAVAILABLE = 6;
 }
 
 enum EDEV_MODE {
