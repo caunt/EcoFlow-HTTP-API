@@ -127,5 +127,5 @@ jobs:
       - name: Upload Compressed Archives
         uses: actions/upload-artifact@v6
         with:
-          name: EcoFlow-Mqtt-Api-Builds
+          name: compressed
           path: ./release-archives/*.tar.xz
