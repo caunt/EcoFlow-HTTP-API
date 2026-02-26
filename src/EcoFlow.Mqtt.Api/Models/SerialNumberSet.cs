@@ -40,7 +40,7 @@ public class SerialNumberSet(IOptions<EcoFlowConfiguration> options, HttpClient 
             if (string.IsNullOrWhiteSpace(title))
                 throw new InvalidOperationException($"Device information for serial number '{serialNumber}' does not contain a valid title.\n{data[0]}");
 
-            deviceInfo = new DeviceInfo(serialNumber, title);
+            _cache[serialNumber] = deviceInfo = new DeviceInfo(serialNumber, title);
         }
 
         return deviceInfo;
