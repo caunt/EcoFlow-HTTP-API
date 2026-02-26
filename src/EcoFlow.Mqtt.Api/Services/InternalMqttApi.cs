@@ -12,7 +12,7 @@ using System.Text.Json.Nodes;
 
 namespace EcoFlow.Mqtt.Api.Services;
 
-public class InternalMqttApi(InternalHttpApi httpApi) : IHostedService
+public class InternalMqttApi : IHostedService
 {
     private static readonly Encoding Encoding = new UTF8Encoding(false, true);
     private readonly ConcurrentDictionary<ISession, MqttState> _states = [];
