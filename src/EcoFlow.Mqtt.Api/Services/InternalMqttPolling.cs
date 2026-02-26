@@ -38,13 +38,14 @@ public class InternalMqttPolling(InternalMqttApi mqttApi) : BackgroundService
     {
         using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(15));
 
-        while (await periodicTimer.WaitForNextTickAsync(cancellationToken))
+        do
         {
             if (cancellationToken.IsCancellationRequested)
                 break;
 
             await SendAsync(cancellationToken);
         }
+        while (await periodicTimer.WaitForNextTickAsync(cancellationToken));
     }
 
     private async Task SendAsync(CancellationToken cancellationToken = default)
