@@ -58,13 +58,15 @@ public class SerialNumberSet(IOptions<EcoFlowConfiguration> options, HttpClient 
 
         foreach (var template in templates.Span)
         {
-            if (template is null || serialNumber.Length != template.Length)
+            if (template is null)
+                continue;
+
+            if (serialNumber.Length != template.Length && serialNumber.Length - 4 != template.Length)
                 continue;
 
             var isMatch = true;
-            var comparisonLimit = serialNumber.Length - 4;
 
-            for (var characterIndex = 0; characterIndex < comparisonLimit; characterIndex++)
+            for (var characterIndex = 0; characterIndex < template.Length; characterIndex++)
             {
                 if (template[characterIndex] != '-' && template[characterIndex] != serialNumber[characterIndex])
                 {
