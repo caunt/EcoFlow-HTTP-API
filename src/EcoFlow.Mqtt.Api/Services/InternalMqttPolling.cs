@@ -2,10 +2,12 @@
 using EcoFlow.Mqtt.Api.Session;
 using Microsoft.Extensions.Hosting;
 using System.Globalization;
+using EcoFlow.Mqtt.Api.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace EcoFlow.Mqtt.Api.Services;
 
-public class InternalMqttPolling(InternalMqttApi mqttApi) : BackgroundService
+public class InternalMqttPolling(IOptions<EcoFlowConfiguration> options, InternalMqttApi mqttApi) : BackgroundService
 {
     private record CallbackDisposable(Action Action) : IDisposable
     {
@@ -36,7 +38,12 @@ public class InternalMqttPolling(InternalMqttApi mqttApi) : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(15));
+        var pollingInterval = options.Value.PollingInterval;
+
+        if (pollingInterval <= TimeSpan.Zero)
+            return;
+        
+        using var periodicTimer = new PeriodicTimer(pollingInterval);
 
         do
         {

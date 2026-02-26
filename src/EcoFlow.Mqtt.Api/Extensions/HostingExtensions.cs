@@ -40,6 +40,8 @@ public static class HostingExtensions
             {
                 if (TryGetEnvironmentVariable("ECOFLOW_POLLING_INTERVAL_SECONDS", out var value) && int.TryParse(value, out var pollingIntervalSeconds))
                     configuration.PollingInterval = TimeSpan.FromSeconds(pollingIntervalSeconds);
+                else
+                    configuration.PollingInterval = TimeSpan.FromSeconds(15);
             });
         }
 
