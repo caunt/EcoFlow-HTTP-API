@@ -35,6 +35,10 @@ message HeartBeat {
 
   optional uint32 feedback_byte = 4;
 
+  optional uint32 hw_version = 5;
+
+  optional uint32 function_suport_code = 6;
+
   optional ecoflow.cp307module.proto.Cp307Sys.MeterValueItem meter = 7;
 
   optional ecoflow.cp307module.proto.Cp307Sys.MeterValueItem mid_meter = 8;
@@ -149,6 +153,10 @@ message ParamReport {
 
   optional uint32 screen_off_delay = 20;
 
+  optional uint32 ocpp_enable = 21;
+
+  optional uint32 bp_discharge_limit_en = 22;
+
   optional uint32 start_charging_delay = 30;
 
   optional uint32 suspend_charging_delay = 31;
@@ -156,6 +164,22 @@ message ParamReport {
   optional uint32 restart_charging_delay = 32;
 
   optional uint32 phase_change_delay = 33;
+
+  optional uint32 multi_link_en = 40;
+
+  optional uint32 multi_link_solar_mode_en = 41;
+
+  optional uint32 multi_link_keep_charging_en = 42;
+
+  optional uint32 multi_link_work_mode = 43;
+
+  optional uint32 matching_resistor_set = 44;
+
+  optional uint32 safe_code = 100;
+
+  optional uint32 austria_delay_start_time = 111;
+
+  optional uint32 austria_reconnect_wait_time = 112;
 }
 
 message SampleParamReport {
@@ -280,6 +304,12 @@ message EmsEEBus14aStateReport {
   optional uint32 end_timestamp = 6;
 }
 
+message GunLockCtrlResultReport {
+  uint32 ctrl = 1;
+
+  uint32 result = 2;
+}
+
 message ParamGet {
   bool has_product_sku = 1;
 
@@ -321,6 +351,10 @@ message ParamGet {
 
   bool has_screen_off_delay = 20;
 
+  bool has_ocpp_enable = 21;
+
+  bool has_bp_discharge_limit_en = 22;
+
   bool has_start_charging_delay = 30;
 
   bool has_suspend_charging_delay = 31;
@@ -328,6 +362,16 @@ message ParamGet {
   bool has_restart_charging_delay = 32;
 
   bool has_phase_change_delay = 33;
+
+  bool has_multi_link_en = 40;
+
+  bool has_multi_link_solar_mode_en = 41;
+
+  bool has_multi_link_keep_charging_en = 42;
+
+  bool has_multi_link_work_mode = 43;
+
+  bool has_matching_resistor_set = 44;
 }
 
 message ParamGetAck {
@@ -371,6 +415,10 @@ message ParamGetAck {
 
   optional uint32 screen_off_delay = 20;
 
+  optional uint32 ocpp_enable = 21;
+
+  optional uint32 bp_discharge_limit_en = 22;
+
   optional uint32 start_charging_delay = 30;
 
   optional uint32 suspend_charging_delay = 31;
@@ -378,6 +426,16 @@ message ParamGetAck {
   optional uint32 restart_charging_delay = 32;
 
   optional uint32 phase_change_delay = 33;
+
+  optional uint32 multi_link_en = 40;
+
+  optional uint32 multi_link_solar_mode_en = 41;
+
+  optional uint32 multi_link_keep_charging_en = 42;
+
+  optional uint32 multi_link_work_mode = 43;
+
+  optional uint32 matching_resistor_set = 44;
 }
 
 message ParamSet {
@@ -421,6 +479,10 @@ message ParamSet {
 
   optional uint32 screen_off_delay = 20;
 
+  optional uint32 ocpp_enable = 21;
+
+  optional uint32 bp_discharge_limit_en = 22;
+
   optional uint32 start_charging_delay = 30;
 
   optional uint32 suspend_charging_delay = 31;
@@ -428,6 +490,22 @@ message ParamSet {
   optional uint32 restart_charging_delay = 32;
 
   optional uint32 phase_change_delay = 33;
+
+  optional uint32 multi_link_en = 40;
+
+  optional uint32 multi_link_solar_mode_en = 41;
+
+  optional uint32 multi_link_keep_charging_en = 42;
+
+  optional uint32 multi_link_work_mode = 43;
+
+  optional uint32 matching_resistor_set = 44;
+
+  optional uint32 safe_code = 100;
+
+  optional uint32 austria_delay_start_time = 111;
+
+  optional uint32 austria_reconnect_wait_time = 112;
 }
 
 message ParamSetAck {
@@ -459,6 +537,20 @@ message CardWhiteListSet {
 }
 
 message CardWhiteListSetAck {
+  uint32 is_cfg = 1;
+
+  uint32 result = 2;
+
+  optional uint32 error = 3;
+}
+
+message CardWhiteListMultiSet {
+  uint32 is_cfg = 1;
+
+  repeated ecoflow.cp307module.proto.Cp307Sys.CardWhiteListItem item = 2;
+}
+
+message CardWhiteListMultiSetAck {
   uint32 is_cfg = 1;
 
   uint32 result = 2;
@@ -513,6 +605,8 @@ message ChargerCtrl {
 
   optional uint32 work_mode = 7;
 
+  optional string vehicle_id = 8;
+
   optional ecoflow.cp307module.proto.Cp307Sys.SmartModeParameter smart_mode = 31;
 
   optional ecoflow.cp307module.proto.Cp307Sys.SolarModeParameter solar_mode = 32;
@@ -546,6 +640,28 @@ message EnergyStatisticsReport {
 
 message FaultHistoryReport {
   repeated ecoflow.cp307module.proto.Cp307Sys.FaultHistroy item = 1;
+}
+
+message ComponentLifeStatistics {
+  uint32 reLay_l1_n_break_without_load_cnt = 1;
+
+  uint32 reLay_l2_l3_break_without_load_cnt = 2;
+
+  uint32 relay_l1_n_break_with_half_load_cnt = 3;
+
+  uint32 relay_l2_l3_break_with_half_load_cnt = 4;
+
+  uint32 relay_l1_n_break_with_full_load_cnt = 5;
+
+  uint32 relay_l2_l3_break_with_full_load_cnt = 6;
+
+  uint32 gun_pluged_in_cnt = 7;
+
+  uint32 charging_total_time = 8;
+
+  uint32 charging_one_phase_time = 9;
+
+  uint32 charging_three_phase_time = 10;
 }
 
 message EVChargingRecord {
@@ -622,6 +738,8 @@ message EmsToIoTDataSync {
   optional uint32 srceen_state = 8;
 
   optional uint32 vcc_5p8_en = 9;
+
+  optional uint32 ocpp_enable = 10;
 }
 
 message IoTToEmsDataSync {
@@ -732,6 +850,8 @@ enum EMS_CmdID {
 
   EEBUS_14A_STATE_REPORT = 42;
 
+  GUN_LOCK_CTRL_RESULT_REPORT = 43;
+
   PARAM_GET = 65;
 
   PARAM_SET = 66;
@@ -747,6 +867,8 @@ enum EMS_CmdID {
   CARD_READER_PARAM_GET = 71;
 
   CARD_READER_PARAM_SET = 72;
+
+  CARD_WHITE_LIST_MULTI_SET = 73;
 
   POWER_OCEAN_BIND = 75;
 
@@ -764,6 +886,8 @@ enum EMS_CmdID {
 
   FAULT_HISTORY_REPORT = 131;
 
+  COMPONENT_LIFE_STATICTICS = 132;
+
   CHARGED_RECORD = 133;
 
   OPERATION_LOG = 134;
@@ -779,6 +903,18 @@ enum EMS_CmdID {
   IOT_EEBUS_FUNC = 162;
 
   EEBUS_GATEWAY_INFO_GET = 163;
+
+  ATE_CARD_LIST_OPERATE = 175;
+
+  MULTI_LINK_LIST_GET = 193;
+
+  MULTI_LINK_LIST_SET = 194;
+
+  BROADCAST_SEARCH_SLAVE = 195;
+
+  SLAVE_RUN_INFO_REQUEST = 200;
+
+  SLAVE_CHARGE_CTRL = 199;
 }
 
 enum IoT_CmdID {

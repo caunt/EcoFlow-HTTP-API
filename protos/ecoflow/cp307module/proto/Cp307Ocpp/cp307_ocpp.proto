@@ -1,0 +1,445 @@
+syntax = "proto3";
+
+package ecoflow.cp307module.proto.Cp307Ocpp;
+
+message meterValue {
+  uint32 time_stamp = 1;
+
+  uint32 context = 2;
+
+  repeated uint32 current = 3;
+
+  repeated uint32 current_max = 4;
+
+  repeated uint32 voltage = 5;
+
+  repeated uint32 power_factor = 6;
+
+  repeated uint32 active_power = 7;
+
+  repeated uint32 reactive_power = 8;
+
+  repeated uint32 active_power_max = 9;
+
+  repeated uint32 frequency = 10;
+
+  repeated uint32 acitve_energy = 11;
+
+  repeated uint32 reacitve_energy = 12;
+
+  repeated uint32 acitve_energy_interval = 13;
+
+  repeated uint32 reacitve_energy_interval = 14;
+
+  repeated int32 temp = 15;
+
+  optional uint32 Soc = 16;
+
+  optional uint32 RPM = 17;
+}
+
+message vendorInfoSet {
+  optional string device_id = 1;
+
+  optional string url = 2;
+
+  optional string vendor = 3;
+
+  optional string cpo_name = 4;
+
+  optional uint32 profile = 5;
+
+  optional string auth_key = 6;
+}
+
+message vendorInfoSetAck {
+  uint32 result = 1;
+}
+
+message vendorInfoGet {
+  bool has_device_id = 1;
+
+  bool has_url = 2;
+
+  bool has_vendor = 3;
+
+  bool has_cpo_name = 4;
+
+  bool has_profile = 5;
+}
+
+message vendorInfoGetAck {
+  optional string device_id = 1;
+
+  optional string url = 2;
+
+  optional string vendor = 3;
+
+  optional string cpo_name = 4;
+
+  optional uint32 profile = 5;
+}
+
+message vendorInfoClr {
+}
+
+message vendorInfoClrAck {
+  uint32 result = 1;
+}
+
+message vendorCertSet {
+}
+
+message vendorCertSetAck {
+  uint32 result = 1;
+}
+
+message configSet {
+  optional uint32 unlock_ev_side_disconncet = 1;
+
+  optional uint32 led_flash_cnt = 2;
+
+  optional uint32 led_flash_intensity = 3;
+
+  optional uint32 invalid_id_charged_wh_limit = 4;
+
+  optional uint32 meter_value_sync_period_from_0 = 5;
+
+  optional uint32 meter_value_sync_period_charging = 6;
+
+  optional uint32 phase_flip = 7;
+
+  optional uint32 avaliable_set = 8;
+
+  optional uint32 gun_lock_ctrl = 9;
+}
+
+message configSetAck {
+  optional uint32 unlock_ev_side_disconncet_ack = 1;
+
+  optional uint32 led_flash_cnt_ack = 2;
+
+  optional uint32 led_flash_intensity_ack = 3;
+
+  optional uint32 invalid_id_charged_wh_limit_ack = 4;
+
+  optional uint32 meter_value_sync_period_from_0_ack = 5;
+
+  optional uint32 meter_value_sync_period_charging_ack = 6;
+
+  optional uint32 phase_flip_ack = 7;
+
+  optional uint32 avaliable_set_ack = 8;
+
+  optional uint32 gun_lock_ctrl_ack = 9;
+}
+
+message configGet {
+  uint32 has_unlock_ev_side_disconncet = 1;
+
+  uint32 has_led_flash_cnt = 2;
+
+  uint32 has_led_flash_intensity = 3;
+
+  uint32 has_invalid_id_charged_wh_limit = 4;
+
+  uint32 has_meter_value_sync_period_from_0 = 5;
+
+  uint32 has_meter_value_sync_period_charging = 6;
+
+  uint32 has_phase_flip = 7;
+
+  uint32 has_avaliable_set = 8;
+
+  uint32 has_gun_lock_ctrl = 9;
+}
+
+message configGetAck {
+  optional uint32 unlock_ev_side_disconncet = 1;
+
+  optional uint32 led_flash_cnt = 2;
+
+  optional uint32 led_flash_intensity = 3;
+
+  optional uint32 invalid_id_charged_wh_limit = 4;
+
+  optional uint32 meter_value_sync_period_from_0 = 5;
+
+  optional uint32 meter_value_sync_period_charging = 6;
+
+  optional uint32 phase_flip = 7;
+
+  optional uint32 avaliable_set = 8;
+
+  optional uint32 gun_lock_ctrl = 9;
+}
+
+message systemReset {
+  uint32 reset_type = 1;
+}
+
+message systemResetAck {
+  uint32 result = 1;
+}
+
+message chargeCtrl {
+  uint32 charge_ctrl = 1;
+
+  optional uint32 ctrl_type = 2;
+
+  optional uint32 order_id = 3;
+
+  optional string card_id = 4;
+
+  optional string user_id = 5;
+
+  optional uint32 current_ctrl = 6;
+
+  optional uint32 phase_ctrl = 7;
+}
+
+message chargeCtrlAck {
+  uint32 result = 1;
+
+  uint32 charge_ctrl = 2;
+
+  uint32 meter = 3;
+
+  meterValue sample_value = 4;
+
+  optional uint32 stop_reason = 5;
+
+  optional uint32 order_id = 6;
+
+  optional string card_id = 7;
+
+  optional string user_id = 8;
+}
+
+message meterValueReport {
+  optional meterValue sample_value = 1;
+}
+
+message errorCodeReport {
+  optional uint32 error_code = 1;
+}
+
+message errorCodeReportAck {
+  uint32 result = 1;
+}
+
+message chargerAppointment {
+  uint32 is_appointment = 1;
+
+  optional uint32 order_id = 2;
+
+  optional string card_id = 3;
+
+  optional string user_id = 4;
+
+  optional uint32 deadline_time_stamp = 5;
+
+  optional uint32 appointment_id = 6;
+}
+
+message chargerAppointmentAck {
+  uint32 is_appointment = 1;
+
+  uint32 result = 2;
+
+  optional uint32 appointment_id = 3;
+}
+
+message chargingStateChangeReport {
+  uint32 charge_ctrl = 1;
+
+  uint32 ctrl_reason = 2;
+
+  uint32 meter = 3;
+
+  uint32 order_id = 4;
+
+  string card_id = 5;
+
+  string user_id = 6;
+
+  meterValue sample_value = 7;
+}
+
+message orderInfoSet {
+  optional uint32 order_id = 1;
+
+  optional string card_id = 2;
+
+  optional string user_id = 3;
+
+  optional string vehicle_id = 4;
+}
+
+message orderInfoSetAck {
+  uint32 result = 1;
+}
+
+message orderInfoGet {
+  bool has_order_id = 1;
+
+  bool has_card_id = 2;
+
+  bool has_user_id = 3;
+
+  bool has_vehicle_id = 4;
+
+  bool has_start_type = 5;
+
+  bool has_stop_reason = 6;
+
+  bool has_start_time = 7;
+
+  bool has_end_time = 8;
+
+  bool has_charged_energy = 9;
+
+  bool has_start_meter_energy = 10;
+
+  bool has_end_meter_energy = 11;
+
+  bool has_charging_time = 12;
+}
+
+message orderInfoGetAck {
+  optional uint32 order_id = 1;
+
+  optional string card_id = 2;
+
+  optional string user_id = 3;
+
+  optional string vehicle_id = 4;
+
+  optional uint32 start_type = 5;
+
+  optional uint32 stop_reason = 6;
+
+  optional fixed32 start_time = 7;
+
+  optional fixed32 end_time = 8;
+
+  optional uint32 charged_energy = 9;
+
+  optional uint32 start_meter_energy = 10;
+
+  optional uint32 end_meter_energy = 11;
+
+  optional uint32 charging_time = 12;
+}
+
+message dataTransferCP2CS {
+  optional string message = 1;
+
+  optional string data = 2;
+}
+
+message dataTransferCP2CSAck {
+  uint32 status = 1;
+
+  optional string data = 2;
+}
+
+message dataTransferCS2CP {
+  optional string message = 1;
+
+  optional string data = 2;
+}
+
+message dataTransferCS2CPAck {
+  uint32 status = 1;
+
+  optional string data = 2;
+}
+
+enum CmdID {
+  NONE = 0;
+
+  CONFIG_SET = 1;
+
+  CONFIG_GET = 2;
+
+  SYSTEM_RESET = 3;
+
+  ERROR_REPORT = 4;
+
+  METER_VALUE_REPORT = 5;
+
+  CHARGE_CTRL = 6;
+
+  CHARGE_APPOINTMENT = 7;
+
+  CHARGING_STATE_CHANGE = 8;
+
+  ORDER_INFO_SET = 9;
+
+  ORDER_INFO_GET = 10;
+
+  VENDOR_INFO_SET = 161;
+
+  VENDOR_INFO_GET = 162;
+
+  VENDOR_INFO_CLR = 163;
+
+  VENDOR_CERT_SET = 164;
+
+  DATA_TRANSFER_CP2CS = 241;
+
+  DATA_TRANSFER_CS2CP = 242;
+}
+
+enum READING_CONTEXT {
+  INT_BEGIN = 0;
+
+  INT_END = 1;
+
+  OTHER = 2;
+
+  SAMPLE_CLOCK = 3;
+
+  SAMPLE_PERIOD = 4;
+
+  TRANS_BEGIN = 5;
+
+  TRANS_END = 6;
+
+  TRIGGER = 7;
+}
+
+enum ERROR_CODE {
+  CONNECTOR_LOCK_FAILURE = 0;
+
+  EV_COMMUNICATION_ERROR = 1;
+
+  GROUND_FAILURE = 2;
+
+  HIGH_TEMP = 3;
+
+  INTER_ERROR = 4;
+
+  LOCAL_LIST_CONFLICT = 5;
+
+  NO_ERROR = 6;
+
+  OTHER_ERROR = 7;
+
+  OVER_CURRENT_FAILURE = 8;
+
+  OVER_VOLT = 9;
+
+  POWER_METER_FAILURE = 11;
+
+  POWER_SWITCH_FAILURE = 12;
+
+  READER_FAILURE = 13;
+
+  RESET_FAILURE = 14;
+
+  UNDER_VOLT = 15;
+
+  WEAK_SIGNAL = 16;
+}

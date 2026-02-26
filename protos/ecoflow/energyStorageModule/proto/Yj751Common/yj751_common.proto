@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ecoflow.common.proto.Yj751Common;
+package ecoflow.energyStorageModule.proto.Yj751Common;
 
 message InstallmentPaymentServeBelone {
   SERVE_MIDDLEMEN serve_middlemen = 1;

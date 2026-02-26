@@ -173,6 +173,10 @@ message SysFeedPowerSet {
   optional uint32 breaker_capacity_max = 5;
 
   optional uint32 sys_switch_bit = 6;
+
+  optional uint32 sys_switch_bit_set = 7;
+
+  optional uint32 sys_switch_bit_clear = 8;
 }
 
 message SysFeedPowerSetAck {
@@ -2055,6 +2059,8 @@ message EmsParamChangeReport {
   optional uint32 kraken_register_status = 18;
 
   optional uint32 kraken_switch = 19;
+
+  optional EmsAllTimerTaskReport timer_heating_task = 22;
 }
 
 message EmsAllPeakTaskReportAck {
@@ -2783,6 +2789,8 @@ message EmsChangeReport {
   optional bool gateway_mode = 400;
 
   optional bool gateway_online_sta = 402;
+
+  optional uint32 app_switch_bit_one = 601;
 }
 
 message ConfigRead {
