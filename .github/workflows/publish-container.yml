@@ -74,7 +74,7 @@ jobs:
         shell: bash
         env:
           ContainerRegistry: ghcr.io
-          ContainerRepository: caunt/ecoflow-mqtt-api
+          ContainerRepository: caunt/ecoflow-http-api
           ContainerPort: 8080
           MSYS_NO_PATHCONV: 1
           MSYS2_ARG_CONV_EXCL: '*'
@@ -105,7 +105,7 @@ jobs:
         shell: bash
         env:
           ContainerRegistry: ghcr.io
-          ContainerRepository: caunt/ecoflow-mqtt-api
+          ContainerRepository: caunt/ecoflow-http-api
           ContainerPort: 8080
         run: |
           imageTags="latest-${{ matrix.tagSuffix }}"
@@ -137,7 +137,7 @@ jobs:
 
       - name: Create and Push Manifest
         env:
-          targetRepository: ghcr.io/caunt/ecoflow-mqtt-api
+          targetRepository: ghcr.io/caunt/ecoflow-http-api
         run: |
           docker manifest create $targetRepository:latest \
             $targetRepository:latest-linux-x64 \
