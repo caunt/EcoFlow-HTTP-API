@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package ecoflow.po.cp100.Cp307Iot;
+package ecoflow.common.proto.eco.Cp307Iot;
 
-import "ecoflow/po/cp100/Cp307Sys/cp307_sys.proto";
+import "ecoflow/common/proto/eco/Cp307Sys/cp307_sys.proto";
 
 message EnergyFlowCtrl {
   uint32 ctrl_switch = 1;
@@ -35,9 +35,9 @@ message HeartBeat {
 
   optional uint32 feedback_byte = 4;
 
-  optional ecoflow.po.cp100.Cp307Sys.MeterValueItem meter = 7;
+  optional ecoflow.common.proto.eco.Cp307Sys.MeterValueItem meter = 7;
 
-  optional ecoflow.po.cp100.Cp307Sys.MeterValueItem mid_meter = 8;
+  optional ecoflow.common.proto.eco.Cp307Sys.MeterValueItem mid_meter = 8;
 
   optional uint32 energy_value = 9;
 
@@ -97,11 +97,11 @@ message HeartBeat {
 
   optional uint32 energy_from_bp = 47;
 
-  optional ecoflow.po.cp100.Cp307Sys.SmartModeParameter smart_mode_param = 61;
+  optional ecoflow.common.proto.eco.Cp307Sys.SmartModeParameter smart_mode_param = 61;
 
-  optional ecoflow.po.cp100.Cp307Sys.SolarModeParameter solar_mode_param = 62;
+  optional ecoflow.common.proto.eco.Cp307Sys.SolarModeParameter solar_mode_param = 62;
 
-  optional ecoflow.po.cp100.Cp307Sys.POLinkageParameter po_linkage_param = 63;
+  optional ecoflow.common.proto.eco.Cp307Sys.POLinkageParameter po_linkage_param = 63;
 
   optional uint32 device_state = 101;
 }
@@ -223,11 +223,11 @@ message SampleParamReport {
 }
 
 message TimeTaskReport {
-  repeated ecoflow.po.cp100.Cp307Sys.TimerTask list = 1;
+  repeated ecoflow.common.proto.eco.Cp307Sys.TimerTask list = 1;
 }
 
 message CardWhiteListReport {
-  repeated ecoflow.po.cp100.Cp307Sys.CardWhiteListItem list = 1;
+  repeated ecoflow.common.proto.eco.Cp307Sys.CardWhiteListItem list = 1;
 }
 
 message ModuleInfoReport {
@@ -436,7 +436,7 @@ message TimeTaskGet {
 }
 
 message TimeTaskSet {
-  ecoflow.po.cp100.Cp307Sys.TimerTask item = 1;
+  ecoflow.common.proto.eco.Cp307Sys.TimerTask item = 1;
 }
 
 message TimeTaskSetAck {
@@ -447,13 +447,13 @@ message CardWhiteListGet {
 }
 
 message CardWhiteListGetAck {
-  repeated ecoflow.po.cp100.Cp307Sys.CardWhiteListItem list = 1;
+  repeated ecoflow.common.proto.eco.Cp307Sys.CardWhiteListItem list = 1;
 }
 
 message CardWhiteListSet {
   uint32 is_cfg = 1;
 
-  ecoflow.po.cp100.Cp307Sys.CardWhiteListItem item = 2;
+  ecoflow.common.proto.eco.Cp307Sys.CardWhiteListItem item = 2;
 }
 
 message CardWhiteListSetAck {
@@ -511,9 +511,9 @@ message ChargerCtrl {
 
   optional uint32 work_mode = 7;
 
-  optional ecoflow.po.cp100.Cp307Sys.SmartModeParameter smart_mode = 31;
+  optional ecoflow.common.proto.eco.Cp307Sys.SmartModeParameter smart_mode = 31;
 
-  optional ecoflow.po.cp100.Cp307Sys.SolarModeParameter solar_mode = 32;
+  optional ecoflow.common.proto.eco.Cp307Sys.SolarModeParameter solar_mode = 32;
 }
 
 message ChargerCtrlAck {
@@ -535,15 +535,15 @@ message ResetDevice {
 }
 
 message EnergyFlowHistoryReport {
-  repeated ecoflow.po.cp100.Cp307Sys.EnergyFlowHistory item = 1;
+  repeated ecoflow.common.proto.eco.Cp307Sys.EnergyFlowHistory item = 1;
 }
 
 message EnergyStatisticsReport {
-  repeated ecoflow.po.cp100.Cp307Sys.EnergyStatistics item = 1;
+  repeated ecoflow.common.proto.eco.Cp307Sys.EnergyStatistics item = 1;
 }
 
 message FaultHistoryReport {
-  repeated ecoflow.po.cp100.Cp307Sys.FaultHistroy item = 1;
+  repeated ecoflow.common.proto.eco.Cp307Sys.FaultHistroy item = 1;
 }
 
 message EVChargingRecord {

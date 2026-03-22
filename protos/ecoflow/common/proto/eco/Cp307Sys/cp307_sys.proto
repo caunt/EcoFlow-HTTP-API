@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ecoflow.po.cp100.Cp307Sys;
+package ecoflow.common.proto.eco.Cp307Sys;
 
 message EnergyFlowHistory {
   uint32 time_stamp = 1;
