@@ -1,4 +1,4 @@
-﻿using AlphaOmega.Debug;
+using AlphaOmega.Debug;
 using EcoFlow.Exporter.Common;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Reflection;
@@ -189,15 +189,13 @@ public static class ProtosReader
                             {
                                 var currentRegisterIndex = startRegisterIndex + i;
 
-                                if (currentRegisterIndex < registers.Length)
-                                {
-                                    var registerContent = registers[currentRegisterIndex];
+                                if (currentRegisterIndex >= registers.Length)
+                                    throw new InvalidOperationException($"Register {currentRegisterIndex} is out of range.");
 
-                                    if (registerContent is null)
-                                        continue;
+                                if (registers[currentRegisterIndex] is not { } registerString)
+                                    throw new InvalidOperationException($"Register {currentRegisterIndex} does not contain a string part.");
 
-                                    rangeStringBuilder.Append(registerContent);
-                                }
+                                rangeStringBuilder.Append(registerString);
                             }
 
                             yield return new Item(BuildProto(rangeStringBuilder), typeIdRow.TypeDescriptor);
