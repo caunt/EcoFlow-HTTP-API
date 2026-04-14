@@ -115,8 +115,9 @@ public static class ProtosReader
                 if (methodIdRow.name_idx.data is not "<clinit>")
                     continue;
 
-                var instructions = encodedMethodRow.code_off.insns;
-                var registers = new string[byte.MaxValue];
+                var code = encodedMethodRow.code_off;
+                var instructions = code.insns;
+                var registers = new string[code.registers_size];
 
                 for (int index = 0; index < instructions.Length; index++)
                 {
@@ -133,12 +134,31 @@ public static class ProtosReader
 
                             registers[register] = stringValue.data;
                             break;
+
+                        case 0x1B: // const-string/jumbo
+                            var jumboRegister = (byte)(instruction >> 8);
+
+                            var jumboStringIndexLow = (uint)instructions[++index];
+                            var jumboStringIndexHigh = (uint)instructions[++index];
+                            var jumboStringIndex = jumboStringIndexLow | (jumboStringIndexHigh << 16);
+
+                            var jumboStringValue = dex.STRING_DATA_ITEM[jumboStringIndex];
+
+                            registers[jumboRegister] = jumboStringValue.data;
+                            break;
+
                         case 0x24: // filled-new-array
+
                             var format = (byte)(instruction >> 8);
                             var registerCount = (format & 0xF0) >> 4;
                             var fifthRegisterIndex = format & 0x0F;
 
                             var typeIndex = instructions[++index];
+                            var typeDescriptor = dex.TYPE_ID_ITEM[typeIndex].TypeDescriptor;
+
+                            if (typeDescriptor != "[Ljava/lang/String;")
+                                throw new InvalidOperationException($"Unexpected type descriptor: {typeDescriptor}");
+
                             var argumentRegistersEncoded = instructions[++index];
 
                             var firstRegisterIndex = argumentRegistersEncoded & 0x0F;
@@ -163,10 +183,8 @@ public static class ProtosReader
 
                                 if (currentRegisterIndex < registers.Length)
                                 {
-                                    var registerContent = registers[currentRegisterIndex];
-
-                                    if (registerContent is null)
-                                        continue;
+                                    if (registers[currentRegisterIndex] is not { } registerContent)
+                                        throw new InvalidOperationException($"Register {currentRegisterIndex} does not contain a string part.");
 
                                     stringBuilder.Append(registerContent);
                                 }
@@ -181,6 +199,11 @@ public static class ProtosReader
                             var rangeRegisterCount = (byte)(instruction >> 8);
 
                             var rangeTypeIndex = instructions[++index];
+                            var rangeTypeDescriptor = dex.TYPE_ID_ITEM[rangeTypeIndex].TypeDescriptor;
+
+                            if (rangeTypeDescriptor != "[Ljava/lang/String;")
+                                throw new InvalidOperationException($"Unexpected type descriptor: {rangeTypeDescriptor}");
+
                             var startRegisterIndex = instructions[++index];
 
                             var rangeStringBuilder = new StringBuilder();
