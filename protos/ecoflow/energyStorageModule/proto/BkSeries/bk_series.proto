@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.BkSeries;
 
-option java_package = "com.ecoflow.common.proto";
-
 message EventPush {
   uint32 event_ver = 1;
 
@@ -398,6 +396,12 @@ message ConfigWrite {
   optional ControllableLoadHeartbeat controllable_load_heartbeat = 593;
 
   optional AllTimerTask cfg_all_timer_task = 595;
+
+  optional uint32 cfg_ac_standby_time = 10;
+
+  optional bool cfg_sys_phase_detection_enabled = 621;
+
+  optional uint32 cfg_sys_phase_detection_action = 622;
 }
 
 message ConfigWriteAck {
@@ -502,6 +506,8 @@ message ConfigWriteAck {
   optional ControllableLoadHeartbeat controllable_load_heartbeat = 593;
 
   optional AllTimerTask cfg_all_timer_task = 595;
+
+  optional uint32 cfg_ac_standby_time = 10;
 }
 
 message ConfigRead {
@@ -518,6 +524,44 @@ message ConfigReadAck {
   optional TimezoneChangeList cfg_timezone_change_list = 378;
 
   optional GetIntelligentSchedule cfg_read_intelligent_schedule = 545;
+}
+
+message LocalMeter {
+  uint32 online = 1;
+
+  METER_MODEL model = 2;
+
+  string sn = 3;
+
+  float phase_a_power = 4;
+
+  float phase_b_power = 5;
+
+  float phase_c_power = 6;
+
+  float total_pwr = 7;
+
+  float phase_a_vol = 8;
+
+  float phase_b_vol = 9;
+
+  float phase_c_vol = 10;
+
+  float phase_a_cur = 11;
+
+  float phase_b_cur = 12;
+
+  float phase_c_cur = 13;
+
+  float total_import_kwh = 14;
+
+  float total_export_kwh = 15;
+
+  uint32 smr_version = 16;
+
+  uint32 time_interval = 17;
+
+  string meter_model = 18;
 }
 
 message DisplayPropertyUpload {
@@ -748,6 +792,22 @@ message DisplayPropertyUpload {
   optional ControllableLoadList controllable_load_list = 1549;
 
   optional AllTimerTask all_timer_task = 584;
+
+  optional LocalMeter local_meter = 1692;
+
+  optional uint32 ac_standby_time = 19;
+
+  optional bool sys_phase_detection_enabled = 1704;
+
+  optional uint32 sys_phase_detection_effect = 1705;
+
+  optional uint32 sys_phase_detection_progress = 1706;
+
+  optional uint32 sys_phase_detection_result = 1707;
+
+  optional uint32 phase = 1708;
+
+  optional uint32 sys_phases_feed_grid_pow_ma = 1709;
 }
 
 message ScheduleOutput {
@@ -1078,6 +1138,58 @@ message RuntimePropertyUpload {
   optional int32 ongrid_active_power_ref = 1445;
 
   optional uint32 pfc_vbus_tag = 1446;
+
+  optional uint32 iot_wifi_state = 1617;
+
+  optional uint32 iot_ip_address = 1641;
+
+  optional uint32 iot_gateway_address = 1642;
+
+  optional string iot_wifi_bssid = 1643;
+
+  optional uint32 iot_ble_state = 1619;
+
+  optional uint32 iot_ble_auth_state = 1620;
+
+  optional uint32 iot_mqtt_state = 1621;
+
+  optional int32 iot_mqtt_err_type = 1622;
+
+  optional int32 iot_mqtt_err_reason = 1623;
+
+  optional uint32 iot_mem_heap_size = 1624;
+
+  optional uint32 iot_mem_internal_free_size = 1625;
+
+  optional uint32 iot_mem_largest_free_size = 1626;
+
+  optional uint32 iot_lan1_mesh_id_summary = 1627;
+
+  optional uint32 iot_lan1_fsm_state = 1628;
+
+  optional uint32 iot_lan1_plug_counts = 1629;
+
+  optional int32 iot_lan1_plug_cons_pwr = 1630;
+
+  optional uint32 iot_lan1_last_recv_data_time = 1631;
+
+  optional uint32 iot_lan2_id_summary = 1632;
+
+  optional uint32 iot_lan2_enc_key_summary = 1633;
+
+  optional uint32 iot_lan2_fsm_state = 1634;
+
+  optional uint32 iot_lan2_dev_online_counts = 1635;
+
+  optional uint32 iot_lan2_last_recv_data_time = 1636;
+
+  optional uint32 iot_shelly_cfg_dev_counts = 1637;
+
+  optional uint32 iot_shelly_online_counts = 1638;
+
+  optional uint32 iot_shelly_last_recv_data_time = 1639;
+
+  optional uint32 iot_version = 1644;
 }
 
 message ControllableLoadReq {
@@ -1464,6 +1576,14 @@ enum METER_MODEL {
   IR_POWERFOX_PA201902 = 5;
 
   CT_EF_PRO_3EM = 6;
+
+  HOMEY_P1 = 7;
+
+  P1_EF_01 = 8;
+
+  HOMEWIZARD_P1 = 9;
+
+  EVERHOMW_IR_READER = 10;
 }
 
 enum MASTER_AND_SLAVE {
@@ -1516,4 +1636,6 @@ enum POWER_SOCKET_MODEL {
   POWER_SOCKET_NONE = 0;
 
   POWER_SOCKET_EF_PLUG_S_MTR_GEN_3 = 1;
+
+  POWER_SOCKET_EF_PLUS_PLUG_UK = 2;
 }

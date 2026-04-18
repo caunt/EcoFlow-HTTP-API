@@ -2983,6 +2983,12 @@ enum WorkMode {
   WORKMODE_AI_SCHEDULE = 12;
 
   WORKMODE_KRAKEN = 13;
+
+  WORKMODE_OIL = 14;
+
+  WORKMODE_TIMER_HEAT_MODE = 15;
+
+  WORKMODE_IDLE = 255;
 }
 
 enum SgReadyMode {

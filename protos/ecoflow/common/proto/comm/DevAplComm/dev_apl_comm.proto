@@ -2099,6 +2099,22 @@ message ConfigWrite {
 
   optional NEM3ScheduleTask cfg_NEM3_schedule_task = 620;
 
+  optional uint32 cfg_off_grid_dsg_soc_generator = 624;
+
+  optional uint32 cfg_grid_chg_pow_max = 625;
+
+  optional bool cfg_NEM3_is_enable = 626;
+
+  optional bool cfg_third_inv_is_support_zero_feed_grid = 627;
+
+  optional float cfg_ecohub_rated_pow_setting = 628;
+
+  optional uint32 cfg_app_cur_commission_step = 629;
+
+  optional float cfg_pre_chg_bus_err_value = 630;
+
+  optional bool cfg_do_pto_strategy = 631;
+
   optional uint32 cfg_backup_box_mode = 1652;
 }
 
@@ -3120,6 +3136,22 @@ message ConfigWriteAck {
   optional NEM3_ENERGY_EXPORT_SETTING cfg_NEM3_energy_export_setting = 619;
 
   optional NEM3ScheduleTask cfg_NEM3_schedule_task = 620;
+
+  optional uint32 cfg_off_grid_dsg_soc_generator = 624;
+
+  optional uint32 cfg_grid_chg_pow_max = 625;
+
+  optional bool cfg_NEM3_is_enable = 626;
+
+  optional bool cfg_third_inv_is_support_zero_feed_grid = 627;
+
+  optional float cfg_ecohub_rated_pow_setting = 628;
+
+  optional uint32 cfg_app_cur_commission_step = 629;
+
+  optional float cfg_pre_chg_bus_err_value = 630;
+
+  optional bool cfg_do_pto_strategy = 631;
 
   optional uint32 cfg_backup_box_mode = 1652;
 }
@@ -4860,6 +4892,24 @@ message DisplayPropertyUpload {
   optional NEM3_IMPORT_EXPORT_SETTING NEM3_import_export_setting = 1702;
 
   optional NEM3_ENERGY_EXPORT_SETTING NEM3_energy_export_setting = 1703;
+
+  optional uint32 off_grid_dsg_soc_generator = 1711;
+
+  optional bool NEM3_is_enable = 1712;
+
+  optional bool third_inv_is_support_zero_feed_grid = 1713;
+
+  optional float ecohub_rated_pow_setting = 1714;
+
+  optional float pow_get_ecohub = 1715;
+
+  optional bool is_have_ecohub = 1716;
+
+  optional float pre_chg_bus_err_value = 1718;
+
+  optional bool do_pto_strategy = 1719;
+
+  optional bool is_doing_pto_strategy = 1720;
 }
 
 message RuntimePropertyUpload {
@@ -5622,6 +5672,8 @@ message RuntimePropertyUpload {
   optional uint32 dev_aux_source_type = 1687;
 
   optional int32 bmsinfo_property_full_upload_period = 1691;
+
+  optional bool is_support_off_grid_run = 1717;
 }
 
 message DevRequest {
@@ -6668,6 +6720,8 @@ enum VPP_EVENT_STATUS {
   VPP_EVENT_NONE = 0;
 
   VPP_EVENT_DOING = 1;
+
+  VPP_EVENT_STATUS_VPP_EVENT_FINISH = 2;
 }
 
 enum DISPATCH_BP_ATTR {
@@ -6720,4 +6774,6 @@ enum NEM3_IMPORT_EXPORT_SETTING {
   NEM3_IMPORT_EXPORT_EXPORT_ONLY = 1;
 
   NEM3_IMPORT_EXPORT_IMPORT_ONLY = 2;
+
+  NEM3_IMPORT_EXPORT_LIMIT = 3;
 }
