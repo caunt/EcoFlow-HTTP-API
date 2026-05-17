@@ -21,23 +21,6 @@ public static class EcoFlowExtensions
         }
     }
 
-    extension(Ecoflow.Corebiz.Mqtt.Proto.Common.Send_Header_Msg headers)
-    {
-        public IEnumerable<Ecoflow.Corebiz.Mqtt.Proto.Common.Header> Decrypted
-        {
-            get
-            {
-                foreach (var header in headers.Msg)
-                {
-                    if (header.EncType is 1)
-                        header.Pdata = Decrypt(header.Pdata, header.Seq);
-
-                    yield return header;
-                }
-            }
-        }
-    }
-
     extension(Ecoflow.Wn100Module.Pb.WnCommon.Send_Header_Msg headers)
     {
         public IEnumerable<Ecoflow.Wn100Module.Pb.WnCommon.Header> Decrypted

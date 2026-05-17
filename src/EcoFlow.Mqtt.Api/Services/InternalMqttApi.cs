@@ -1,4 +1,3 @@
-using Ecoflow.Corebiz.Mqtt.Proto.Common;
 using EcoFlow.Mqtt.Api.Extensions;
 using EcoFlow.Mqtt.Api.Models;
 using EcoFlow.Mqtt.Api.Session;
@@ -9,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Nodes;
+using Ecoflow.Cbb.Databus.Proto.Common;
 using EcoFlow.Mqtt.Api.Configuration;
 using EcoFlow.Mqtt.Api.Exceptions;
 using Microsoft.Extensions.Options;
@@ -65,8 +65,7 @@ public class InternalMqttApi(IOptions<EcoFlowConfiguration> options) : IHostedSe
             if (mqttConfiguration.Tls)
                 optionsBuilder = optionsBuilder.WithTlsOptions(new MqttClientTlsOptions { UseTls = true });
 
-            var options = optionsBuilder.Build();
-            await state.Client.ConnectAsync(options, cancellationToken);
+            await state.Client.ConnectAsync(options: optionsBuilder.Build(), cancellationToken);
         }
 
         lock (_states)

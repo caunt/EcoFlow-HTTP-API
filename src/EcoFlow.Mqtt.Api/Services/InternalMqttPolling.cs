@@ -11,7 +11,7 @@ public class InternalMqttPolling(IOptions<EcoFlowConfiguration> options, Interna
 {
     private record CallbackDisposable(Action Action) : IDisposable
     {
-        public void Dispose() => Action?.Invoke();
+        public void Dispose() => Action.Invoke();
     }
 
     private int _incrementingCounter = 1000;
@@ -84,7 +84,7 @@ public class InternalMqttPolling(IOptions<EcoFlowConfiguration> options, Interna
     {
         using var lockScope = _lock.EnterScope();
 
-        var formattedDateString = DateTime.Now.ToString("ssfff", CultureInfo.InvariantCulture);
+        var formattedDateString = $"{DateTime.Now:ssfff}";
         var currentIncrement = _incrementingCounter++;
 
         if (currentIncrement >= 9999)
