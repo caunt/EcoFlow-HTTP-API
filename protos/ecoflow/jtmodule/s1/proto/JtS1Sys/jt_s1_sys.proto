@@ -1596,10 +1596,14 @@ message EmsPVInvMeterGet {
 
 message EmsPVInvMeterGetAck {
   uint32 result = 1;
+
+  bool pv_inv_location = 2;
 }
 
 message EmsPVInvMeterCfgSet {
   bool pv_meter_cfg = 1;
+
+  bool pv_inv_location = 2;
 }
 
 message EmsPVInvMeterCfgSetAck {
@@ -1962,6 +1966,20 @@ message PeaktaskInfo {
   uint32 peak_soc = 3;
 }
 
+message EmsPeakSubTimeTaskInfo {
+  uint32 time_mode = 1;
+
+  uint32 time_param = 2;
+
+  repeated uint32 time_table = 3;
+
+  uint32 peak_pwr_max = 4;
+}
+
+message EmsPeakSubTimeTaskInfoGrp {
+  repeated EmsPeakSubTimeTaskInfo Timetaskinfo = 1;
+}
+
 message EmsPeakTaskCfg {
   uint32 role = 1;
 
@@ -1978,14 +1996,8 @@ message EmsPeakTaskCfg {
   optional PeaktaskInfo Info = 7;
 
   bytes peak_sub_info = 8;
-}
 
-message EmsPeakSubTimeTaskInfo {
-  uint32 time_mode = 1;
-
-  uint32 time_param = 2;
-
-  repeated uint32 time_table = 3;
+  optional EmsPeakSubTimeTaskInfoGrp TimetaskinfoGroup = 9;
 }
 
 message EmsPeakPriceInfo {
@@ -2791,6 +2803,12 @@ message EmsChangeReport {
   optional bool gateway_online_sta = 402;
 
   optional uint32 app_switch_bit_one = 601;
+
+  optional IEEE20305ConnectStat ieee20305_connect_stat = 612;
+
+  optional IEEE20305CtrlStat ieee20305_ctrl_stat = 613;
+
+  optional uint32 ieee20305_last_ctrl_timestamp = 614;
 }
 
 message ConfigRead {
@@ -3085,6 +3103,26 @@ enum bms_SysState {
   POWER_OFF_STATE = 3;
 
   SLEEP_STATE = 4;
+}
+
+enum IEEE20305ConnectStat {
+  IEEE20305_CONNECT_STAT_DISCONNECTED = 0;
+
+  IEEE20305_CONNECT_STAT_CONNECTING = 1;
+
+  IEEE20305_CONNECT_STAT_CONNECTED = 2;
+
+  IEEE20305_CONNECT_STAT_FAULT = 3;
+}
+
+enum IEEE20305CtrlStat {
+  IEEE20305_CTRL_STAT_IDLE = 0;
+
+  IEEE20305_CTRL_STAT_ACTIVE = 1;
+
+  IEEE20305_CTRL_STAT_TIMEOUT = 2;
+
+  IEEE20305_CTRL_STAT_FAULT = 3;
 }
 
 enum PeakShavingStatus {

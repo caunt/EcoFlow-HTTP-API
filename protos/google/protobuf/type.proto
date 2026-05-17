@@ -110,6 +110,8 @@ message Type {
   SourceContext source_context = 5;
 
   Syntax syntax = 6;
+
+  string edition = 7;
 }
 
 message EnumValue {
@@ -130,10 +132,14 @@ message Enum {
   SourceContext source_context = 4;
 
   Syntax syntax = 5;
+
+  string edition = 6;
 }
 
 enum Syntax {
   SYNTAX_PROTO2 = 0;
 
   SYNTAX_PROTO3 = 1;
+
+  SYNTAX_EDITIONS = 2;
 }

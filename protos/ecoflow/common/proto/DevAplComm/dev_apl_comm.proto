@@ -1050,40 +1050,6 @@ message CloudEdevInfolist {
   repeated CloudEdevInfo dev_list = 1;
 }
 
-message ReplaceDevCtrl {
-  REPLACE_DEV_TYPE replace_type = 1;
-
-  REPLACE_DEV_STEP replace_step = 2;
-
-  uint32 total_frame_index = 3;
-
-  uint32 cur_frame_index = 4;
-
-  uint32 res = 5;
-
-  uint32 process_id = 6;
-
-  uint32 reserve_1 = 7;
-}
-
-message NEM3ScheduleTaskItem {
-  uint32 start_timestamp = 1;
-
-  uint32 end_timestamp = 2;
-
-  uint32 grid_chg_wh = 3;
-
-  uint32 grid_dischg_wh = 4;
-
-  uint32 chg_wh = 5;
-
-  uint32 dischg_wh = 6;
-}
-
-message NEM3ScheduleTask {
-  repeated NEM3ScheduleTaskItem NEM3_schedule_item = 1;
-}
-
 message ConfigWrite {
   optional bool cfg_power_off = 3;
 
@@ -2068,48 +2034,6 @@ message ConfigWrite {
   optional bool cfg_grid_charge_to_battery_enable = 603;
 
   optional CloudEdevInfolist cfg_cloud_edev_list = 605;
-
-  optional bool cfg_sys_restart = 606;
-
-  optional bool cfg_dev_restart = 607;
-
-  optional ReplaceDevCtrl cfg_replace_dev_ctrl = 608;
-
-  optional int32 cfg_bmsinfo_property_full_upload_period = 609;
-
-  optional uint32 cfg_manual_reset_err_code = 610;
-
-  optional float cfg_dev_energy_conservation_threshold = 611;
-
-  optional uint32 cfg_dev_energy_conservation_time = 612;
-
-  optional bool cfg_JA12_switch = 613;
-
-  optional uint32 cfg_JA12_compliant_cycle_capacity = 614;
-
-  optional uint32 cfg_JA12_compliant_cycle_timestamp = 615;
-
-  optional uint32 cfg_afci_protect_threshold = 616;
-
-  optional bool cfg_afci_protect_switch = 617;
-
-  optional NEM3_IMPORT_EXPORT_SETTING cfg_NEM3_import_export_setting = 618;
-
-  optional NEM3_ENERGY_EXPORT_SETTING cfg_NEM3_energy_export_setting = 619;
-
-  optional NEM3ScheduleTask cfg_NEM3_schedule_task = 620;
-
-  optional uint32 cfg_off_grid_dsg_soc_generator = 624;
-
-  optional uint32 cfg_grid_chg_pow_max = 625;
-
-  optional bool cfg_NEM3_is_enable = 626;
-
-  optional bool cfg_third_inv_is_support_zero_feed_grid = 627;
-
-  optional float cfg_ecohub_rated_pow_setting = 628;
-
-  optional uint32 cfg_app_cur_commission_step = 629;
 
   optional uint32 cfg_backup_box_mode = 1652;
 }
@@ -3102,48 +3026,6 @@ message ConfigWriteAck {
   optional bool cfg_grid_charge_to_battery_enable = 603;
 
   optional CloudEdevInfolist cfg_cloud_edev_list = 605;
-
-  optional bool cfg_sys_restart = 606;
-
-  optional bool cfg_dev_restart = 607;
-
-  optional ReplaceDevCtrl cfg_replace_dev_ctrl = 608;
-
-  optional int32 cfg_bmsinfo_property_full_upload_period = 609;
-
-  optional uint32 cfg_manual_reset_err_code = 610;
-
-  optional float cfg_dev_energy_conservation_threshold = 611;
-
-  optional uint32 cfg_dev_energy_conservation_time = 612;
-
-  optional bool cfg_JA12_switch = 613;
-
-  optional uint32 cfg_JA12_compliant_cycle_capacity = 614;
-
-  optional uint32 cfg_JA12_compliant_cycle_timestamp = 615;
-
-  optional uint32 cfg_afci_protect_threshold = 616;
-
-  optional bool cfg_afci_protect_switch = 617;
-
-  optional NEM3_IMPORT_EXPORT_SETTING cfg_NEM3_import_export_setting = 618;
-
-  optional NEM3_ENERGY_EXPORT_SETTING cfg_NEM3_energy_export_setting = 619;
-
-  optional NEM3ScheduleTask cfg_NEM3_schedule_task = 620;
-
-  optional uint32 cfg_off_grid_dsg_soc_generator = 624;
-
-  optional uint32 cfg_grid_chg_pow_max = 625;
-
-  optional bool cfg_NEM3_is_enable = 626;
-
-  optional bool cfg_third_inv_is_support_zero_feed_grid = 627;
-
-  optional float cfg_ecohub_rated_pow_setting = 628;
-
-  optional uint32 cfg_app_cur_commission_step = 629;
 
   optional uint32 cfg_backup_box_mode = 1652;
 }
@@ -4856,46 +4738,6 @@ message DisplayPropertyUpload {
   optional VppTaskStatus vpp_task_status = 1681;
 
   optional bool grid_charge_to_battery_enable = 1686;
-
-  optional float plug_in_info_5_20_out1_vol = 1688;
-
-  optional float plug_in_info_5_20_out2_vol = 1689;
-
-  optional uint32 dev_ota_update_forbidden = 1690;
-
-  optional float dev_energy_conservation_threshold = 1693;
-
-  optional uint32 dev_energy_conservation_time = 1694;
-
-  optional bool JA12_switch = 1695;
-
-  optional uint32 JA12_compliant_cycle_capacity = 1696;
-
-  optional uint32 JA12_compliant_cycle_timestamp = 1697;
-
-  optional uint32 afci_protect_threshold = 1698;
-
-  optional bool afci_protect_switch = 1699;
-
-  optional uint32 JA12_backup_soc_reset_timestamp = 1700;
-
-  optional bool JA12_is_can_reset_capacity = 1701;
-
-  optional NEM3_IMPORT_EXPORT_SETTING NEM3_import_export_setting = 1702;
-
-  optional NEM3_ENERGY_EXPORT_SETTING NEM3_energy_export_setting = 1703;
-
-  optional uint32 off_grid_dsg_soc_generator = 1711;
-
-  optional bool NEM3_is_enable = 1712;
-
-  optional bool third_inv_is_support_zero_feed_grid = 1713;
-
-  optional float ecohub_rated_pow_setting = 1714;
-
-  optional float pow_get_ecohub = 1715;
-
-  optional bool is_have_ecohub = 1716;
 }
 
 message RuntimePropertyUpload {
@@ -5654,10 +5496,6 @@ message RuntimePropertyUpload {
   optional uint32 pv2_fsm = 1649;
 
   optional uint32 pv_input_type = 1650;
-
-  optional uint32 dev_aux_source_type = 1687;
-
-  optional int32 bmsinfo_property_full_upload_period = 1691;
 }
 
 message DevRequest {
@@ -5686,8 +5524,6 @@ message DevRequest {
   optional bool require_storm_pattern_open_flag = 12;
 
   optional bool require_screen_light_ctr_param = 13;
-
-  optional bool require_NEM3_schedule = 14;
 }
 
 message DevRequestAck {
@@ -6724,38 +6560,4 @@ enum DISPATCH_PV_ATTR {
   PV_ATTR_NORMAL = 1;
 
   PV_ATTR_SHUTDOWN = 2;
-}
-
-enum REPLACE_DEV_TYPE {
-  REPLACE_MC_BOARD = 0;
-
-  REPLACE_WHOLE_DEV = 1;
-}
-
-enum REPLACE_DEV_STEP {
-  STEP_REQ_IS_SUPPORT_TO_REPLACE = 0;
-
-  STEP_DEV_SYCN_CFG_DATA = 1;
-
-  STEP_SYCN_CFG_TO_DEV = 2;
-}
-
-enum NEM3_ENERGY_EXPORT_SETTING {
-  NEM3_ENERGY_EXPORT_DISABLED = 0;
-
-  NEM3_ENERGY_EXPORT_FORBID_FEEDIN = 1;
-
-  NEM3_ENERGY_EXPORT_SOLAR_ONLY = 2;
-
-  NEM3_ENERGY_EXPORT_HIGH_PRIORITY = 3;
-}
-
-enum NEM3_IMPORT_EXPORT_SETTING {
-  NEM3_IMPORT_EXPORT_DISABLED = 0;
-
-  NEM3_IMPORT_EXPORT_EXPORT_ONLY = 1;
-
-  NEM3_IMPORT_EXPORT_IMPORT_ONLY = 2;
-
-  NEM3_IMPORT_EXPORT_LIMIT = 3;
 }
