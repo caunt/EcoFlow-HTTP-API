@@ -4965,6 +4965,8 @@ message DisplayPropertyUpload {
 
   optional uint32 bms_behavior_report_cycle = 1721;
 
+  optional float pow_get_ac2_out = 1727;
+
   optional uint32 bms_cloud_report_cycle = 1722;
 
   optional uint32 cms_batt_nameplate_rated_energy = 1723;
@@ -4972,6 +4974,8 @@ message DisplayPropertyUpload {
   optional uint32 cloud_ctrl_en = 1725;
 
   optional CloudCtrlRemainPwr cloud_ctrl_remain_pwr = 1726;
+
+  optional uint32 tou_task_running_action = 1728;
 }
 
 message RuntimePropertyUpload {

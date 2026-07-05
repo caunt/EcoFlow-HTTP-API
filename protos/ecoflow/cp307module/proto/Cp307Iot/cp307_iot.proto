@@ -107,6 +107,8 @@ message HeartBeat {
 
   optional ecoflow.cp307module.proto.Cp307Sys.POLinkageParameter po_linkage_param = 63;
 
+  optional uint32 ecosys_off_grid_status = 64;
+
   optional uint32 device_state = 101;
 
   optional uint32 suspend_reason = 102;
