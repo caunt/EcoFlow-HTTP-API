@@ -42,7 +42,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Grpc.Tools" Version="2.82.0" />
+		<PackageReference Include="Grpc.Tools" Version="2.83.0" />
 	</ItemGroup>
 
 	<ItemGroup>
