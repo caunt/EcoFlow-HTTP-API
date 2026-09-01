@@ -36,7 +36,7 @@
 	
 	<ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
-        <PackageReference Include="Google.Protobuf" Version="3.36.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.36.1" />
 		<PackageReference Include="MQTTnet" Version="5.2.0.1603" />
 		<PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 	</ItemGroup>
