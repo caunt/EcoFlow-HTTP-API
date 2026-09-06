@@ -2229,6 +2229,176 @@ message SafetyFunRCRParamReport {
   uint32 active_state = 2;
 }
 
+message ConfigRead {
+  repeated uint32 action_id = 1;
+}
+
+message GetIntelligentSchedule {
+  uint32 intelligent_schedule_mode = 1;
+
+  uint32 join_intelligent_schedule = 2;
+}
+
+message ConfigReadAck {
+  optional GetIntelligentSchedule cfg_read_intelligent_schedule = 545;
+}
+
+message ReqIntelligentSchedule {
+  uint32 req_intelligent_schedule_state = 1;
+}
+
+message DevRequest {
+  uint32 dev_utc_time = 1;
+
+  float dev_utc_timezone = 2;
+
+  optional ReqIntelligentSchedule require_intelligent_schedule = 11;
+}
+
+message interval {
+  float averageActivePower = 1;
+
+  uint32 duration = 2;
+
+  float energyCharged = 3;
+}
+
+message inverterState {
+  float solarActivePower = 1;
+
+  float inverterActivePower = 2;
+
+  float gridActivePower = 3;
+
+  uint32 exportToGridAllowed = 4;
+
+  uint32 importFromGridAllowed = 5;
+
+  float maximumExportPowerToGrid = 6;
+}
+
+message batteryState {
+  uint32 chargeStatus = 1;
+
+  uint32 mode = 2;
+
+  uint32 usableCapacity = 3;
+
+  uint32 reserveState0fCharge = 4;
+
+  uint32 stateOfCharge = 5;
+
+  uint32 currentEnergy = 6;
+}
+
+message Krakendatareport {
+  optional uint32 kraken_commit_id = 1;
+
+  optional uint32 kraken_mode_active = 2;
+
+  optional bool is_load_limit = 3;
+
+  optional inverterState inverter_State = 4;
+
+  optional interval interval = 5;
+
+  optional batteryState battery_State = 6;
+
+  optional bool kraken_cmd_support = 7;
+
+  optional float sys_bp_pwr = 8;
+
+  optional float kraken_effect_staut = 9;
+
+  optional float kraken_register_stayt = 10;
+}
+
+message KrakenSet {
+  uint32 kraken_switch = 1;
+}
+
+message KrakenSetAck {
+  uint32 result = 1;
+}
+
+message OilEngineTimerTask {
+  uint32 is_cfg = 1;
+
+  uint32 task_index = 2;
+
+  bool is_enable = 3;
+
+  optional bool is_effect = 4;
+
+  optional uint32 type = 5;
+
+  optional uint32 param = 6;
+
+  optional uint32 time_mode = 7;
+
+  optional uint32 time_param = 8;
+
+  repeated uint32 time_table = 9;
+}
+
+message OilEngineBindAck {
+  uint32 result = 1;
+}
+
+message OilEngineParaSet {
+  optional float rated_power = 1;
+
+  optional uint32 connect_type = 2;
+
+  optional uint32 control_type = 3;
+
+  optional uint32 control_state = 4;
+
+  optional uint32 start_threshold = 5;
+
+  optional uint32 stop_threshold = 6;
+
+  optional OilEngineTimerTask time_para = 7;
+
+  optional uint32 start_control_io_bit = 8;
+
+  optional uint32 connect_io_bit = 9;
+
+  optional uint32 connect_style_select = 11;
+}
+
+message OilEngineBind {
+  uint32 bind_ctrl = 1;
+
+  optional OilEngineParaSet oil_engine_para = 2;
+}
+
+message OilEngineParaSetAck {
+  uint32 result = 1;
+}
+
+message OilEngineParaReport {
+  uint32 bind_state = 1;
+
+  optional uint32 ctrl_state = 2;
+
+  optional uint32 dry_contact_state = 3;
+
+  optional uint32 work_state = 4;
+
+  optional uint32 schedule_mode = 5;
+
+  optional OilEngineParaSet oil_engine_para = 10;
+}
+
+message VppSwitchSet {
+  uint32 vpp_third_type = 1;
+
+  uint32 vpp_switch = 2;
+
+  uint32 vpp_ctl_level = 3;
+}
+
 message EmsChangeReport {
   optional uint32 sys_work_sta = 1;
 
@@ -2804,173 +2974,15 @@ message EmsChangeReport {
 
   optional uint32 app_switch_bit_one = 601;
 
+  optional uint32 VPP_ctrl_state = 603;
+
+  optional VppSwitchSet vpp_switch_set = 605;
+
   optional IEEE20305ConnectStat ieee20305_connect_stat = 612;
 
   optional IEEE20305CtrlStat ieee20305_ctrl_stat = 613;
 
   optional uint32 ieee20305_last_ctrl_timestamp = 614;
-}
-
-message ConfigRead {
-  repeated uint32 action_id = 1;
-}
-
-message GetIntelligentSchedule {
-  uint32 intelligent_schedule_mode = 1;
-
-  uint32 join_intelligent_schedule = 2;
-}
-
-message ConfigReadAck {
-  optional GetIntelligentSchedule cfg_read_intelligent_schedule = 545;
-}
-
-message ReqIntelligentSchedule {
-  uint32 req_intelligent_schedule_state = 1;
-}
-
-message DevRequest {
-  uint32 dev_utc_time = 1;
-
-  float dev_utc_timezone = 2;
-
-  optional ReqIntelligentSchedule require_intelligent_schedule = 11;
-}
-
-message interval {
-  float averageActivePower = 1;
-
-  uint32 duration = 2;
-
-  float energyCharged = 3;
-}
-
-message inverterState {
-  float solarActivePower = 1;
-
-  float inverterActivePower = 2;
-
-  float gridActivePower = 3;
-
-  uint32 exportToGridAllowed = 4;
-
-  uint32 importFromGridAllowed = 5;
-
-  float maximumExportPowerToGrid = 6;
-}
-
-message batteryState {
-  uint32 chargeStatus = 1;
-
-  uint32 mode = 2;
-
-  uint32 usableCapacity = 3;
-
-  uint32 reserveState0fCharge = 4;
-
-  uint32 stateOfCharge = 5;
-
-  uint32 currentEnergy = 6;
-}
-
-message Krakendatareport {
-  optional uint32 kraken_commit_id = 1;
-
-  optional uint32 kraken_mode_active = 2;
-
-  optional bool is_load_limit = 3;
-
-  optional inverterState inverter_State = 4;
-
-  optional interval interval = 5;
-
-  optional batteryState battery_State = 6;
-
-  optional bool kraken_cmd_support = 7;
-
-  optional float sys_bp_pwr = 8;
-
-  optional float kraken_effect_staut = 9;
-
-  optional float kraken_register_stayt = 10;
-}
-
-message KrakenSet {
-  uint32 kraken_switch = 1;
-}
-
-message KrakenSetAck {
-  uint32 result = 1;
-}
-
-message OilEngineTimerTask {
-  uint32 is_cfg = 1;
-
-  uint32 task_index = 2;
-
-  bool is_enable = 3;
-
-  optional bool is_effect = 4;
-
-  optional uint32 type = 5;
-
-  optional uint32 param = 6;
-
-  optional uint32 time_mode = 7;
-
-  optional uint32 time_param = 8;
-
-  repeated uint32 time_table = 9;
-}
-
-message OilEngineBindAck {
-  uint32 result = 1;
-}
-
-message OilEngineParaSet {
-  optional float rated_power = 1;
-
-  optional uint32 connect_type = 2;
-
-  optional uint32 control_type = 3;
-
-  optional uint32 control_state = 4;
-
-  optional uint32 start_threshold = 5;
-
-  optional uint32 stop_threshold = 6;
-
-  optional OilEngineTimerTask time_para = 7;
-
-  optional uint32 start_control_io_bit = 8;
-
-  optional uint32 connect_io_bit = 9;
-
-  optional uint32 connect_style_select = 11;
-}
-
-message OilEngineBind {
-  uint32 bind_ctrl = 1;
-
-  optional OilEngineParaSet oil_engine_para = 2;
-}
-
-message OilEngineParaSetAck {
-  uint32 result = 1;
-}
-
-message OilEngineParaReport {
-  uint32 bind_state = 1;
-
-  optional uint32 ctrl_state = 2;
-
-  optional uint32 dry_contact_state = 3;
-
-  optional uint32 work_state = 4;
-
-  optional uint32 schedule_mode = 5;
-
-  optional OilEngineParaSet oil_engine_para = 10;
 }
 
 enum WorkMode {

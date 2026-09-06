@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package ecoflow.bkseriesmodule.proto.BkDiagnosis;
 
-option java_package = "com.ecoflow.bkseriesmodule.proto";
-
 message UserInfo {
   string user_id = 1;
 }
