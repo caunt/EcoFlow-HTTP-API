@@ -85,6 +85,8 @@ message EnergyStreamItem {
   float other_pv_pwr = 12;
 
   optional EmsPeakShavingDetailReport peak_shaving_detail = 13;
+
+  float spain_4g_pv_pwr = 15;
 }
 
 message EnergyStreamSwitch {
@@ -111,6 +113,8 @@ message EnergyStreamReport {
   float pv3_pwr = 9;
 
   float other_pv_pwr = 10;
+
+  float spain_4g_pv_pwr = 11;
 }
 
 message EnergyStreamDetail {
@@ -2399,6 +2403,18 @@ message VppSwitchSet {
   uint32 vpp_ctl_level = 3;
 }
 
+message EmsSpain4GMeterItem {
+  string sn = 1;
+
+  float ratio = 2;
+
+  bool online_stat = 3;
+}
+
+message EmsSpain4GMeterItemgroup {
+  repeated EmsSpain4GMeterItem meters = 1;
+}
+
 message EmsChangeReport {
   optional uint32 sys_work_sta = 1;
 
@@ -2983,6 +2999,18 @@ message EmsChangeReport {
   optional IEEE20305CtrlStat ieee20305_ctrl_stat = 613;
 
   optional uint32 ieee20305_last_ctrl_timestamp = 614;
+
+  optional EmsSpain4GMeterItemgroup spain_4gmeter_group = 616;
+}
+
+message EmsSpain4GMeterCfgAsk {
+  bool ask = 1;
+}
+
+message EmsSpain4GMeterCfgAskAck {
+  uint32 result = 1;
+
+  EmsSpain4GMeterItemgroup meter_group = 2;
 }
 
 enum WorkMode {

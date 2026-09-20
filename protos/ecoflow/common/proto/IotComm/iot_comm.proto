@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.common.proto.IotComm;
 
+option java_package = "com.ecoflow.common.proto";
+
 message ModuleInfo {
   uint32 product_type = 1;
 
@@ -320,6 +322,28 @@ message IotConfig1547Ack {
   int32 result = 1;
 }
 
+message ApModule {
+  uint32 cmd = 1;
+
+  optional uint32 state = 2;
+
+  optional uint32 timeout = 3;
+}
+
+message ApModuleAck {
+  optional uint32 result = 1;
+
+  optional uint32 state = 2;
+}
+
+message IoTExtCmdSetsPb {
+  optional ApModule ap_module = 1;
+}
+
+message IoTExtCmdSetsPbAck {
+  optional ApModuleAck ap_module_ack = 1;
+}
+
 enum IotCmdSets {
   IOT_NONE_CMD_SETS = 0;
 
@@ -366,6 +390,8 @@ enum IotCmdId {
   IOT_CMD_ID_REFRESH_TOKEN = 170;
 
   IOT_CMD_ID_AUTHENTICATION = 171;
+
+  IOT_CMD_ID_AP_MODULE = 210;
 }
 
 enum UserRoleType {

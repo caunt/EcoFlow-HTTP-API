@@ -20,6 +20,8 @@ message ParallelEnergyStream {
   uint32 bp_soc = 5;
 
   string dev_sn = 6;
+
+  float spain_4g_pv_pwr = 12;
 }
 
 message ParallelEnergyStreamReport {
