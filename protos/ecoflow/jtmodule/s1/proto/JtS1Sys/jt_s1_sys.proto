@@ -165,26 +165,10 @@ message SysKeepSocSetAck {
   sint32 result = 1;
 }
 
-message SysFeedPowerSet {
-  float ems_max_feed_pwr = 1;
-
-  optional uint32 ems_feed_mode = 2;
-
-  optional uint32 ems_feed_ratio = 3;
-
-  optional uint32 ems_feed_pwr = 4;
-
-  optional uint32 breaker_capacity_max = 5;
-
-  optional uint32 sys_switch_bit = 6;
-
-  optional uint32 sys_switch_bit_set = 7;
-
-  optional uint32 sys_switch_bit_clear = 8;
-}
-
 message SysFeedPowerSetAck {
   sint32 result = 1;
+
+  optional uint32 result_code = 2;
 }
 
 message SysMeterRecheck {
@@ -2395,12 +2379,193 @@ message OilEngineParaReport {
   optional OilEngineParaSet oil_engine_para = 10;
 }
 
+message VppPowerStatItem {
+  float mppt_pwr = 1;
+
+  float bp_pwr = 2;
+
+  float grid_pwr = 3;
+
+  float load_pwr = 4;
+}
+
+message VppGeneralConfig {
+  optional uint32 dispatch_third_type = 1;
+
+  optional bool allow_system_backup = 2;
+
+  optional bool allow_storm_mode_backup = 3;
+
+  optional VppFallbackMode fallback_mode = 4;
+
+  optional VppBatChgPwrMode bat_chg_pwr_mode = 5;
+}
+
 message VppSwitchSet {
   uint32 vpp_third_type = 1;
 
   uint32 vpp_switch = 2;
 
   uint32 vpp_ctl_level = 3;
+
+  optional VppGeneralConfig general_config = 4;
+}
+
+message VppPowerReportSet {
+  uint32 power_report_interval = 1;
+
+  uint32 power_period = 2;
+
+  uint32 step_size = 3;
+}
+
+message VppEnergyReportSet {
+  uint32 energy_report_interval = 1;
+
+  uint32 energy_period = 2;
+}
+
+message SysFeedPowerSet {
+  float ems_max_feed_pwr = 1;
+
+  optional uint32 ems_feed_mode = 2;
+
+  optional uint32 ems_feed_ratio = 3;
+
+  optional uint32 ems_feed_pwr = 4;
+
+  optional uint32 breaker_capacity_max = 5;
+
+  optional uint32 sys_switch_bit = 6;
+
+  optional uint32 sys_switch_bit_set = 7;
+
+  optional uint32 sys_switch_bit_clear = 8;
+
+  optional VppSwitchSet vpp_switch_set = 10;
+
+  optional VppPowerReportSet vpp_power_report_set = 11;
+
+  optional VppEnergyReportSet vpp_energy_report_set = 12;
+}
+
+message VppSelfUseModeParam {
+}
+
+message VppPvChgModeParam {
+}
+
+message VppBatDsgModeParam {
+  optional uint32 min_dsg_soc = 1;
+
+  optional uint32 max_dsg_pwr = 2;
+}
+
+message VppBatChgModeParam {
+  optional uint32 max_chg_soc = 1;
+
+  optional uint32 max_chg_pwr = 2;
+}
+
+message VppBatStandbyModeParam {
+}
+
+message VppLimitExportModeParam {
+  optional uint32 limit_export_pwr = 1;
+}
+
+message VppCtrlModeInfo {
+  VppCtrlMode mode = 1;
+
+  optional VppSelfUseModeParam self_use_param = 2;
+
+  optional VppPvChgModeParam pv_chg_param = 3;
+
+  optional VppBatDsgModeParam bat_dsg_param = 4;
+
+  optional VppBatChgModeParam bat_chg_param = 5;
+
+  optional VppBatStandbyModeParam bat_standby_param = 6;
+
+  optional VppLimitExportModeParam limit_export_param = 7;
+}
+
+message VppCtrlCmd {
+  VppCtrlModeInfo mode_info = 1;
+
+  optional uint32 start_timestamp = 2;
+
+  optional uint32 ctrl_time = 3;
+
+  optional VppGeneralConfig general_config = 4;
+}
+
+message VppCtrlCmdAck {
+  uint32 result = 1;
+}
+
+message FeakEnergyItem {
+  float inverter_power_output = 1;
+
+  float pv_voltage_l1 = 2;
+
+  float pv_current_l1 = 3;
+
+  float pv_voltage_l2 = 4;
+
+  float pv_current_l2 = 5;
+
+  float pv_voltage_l3 = 6;
+
+  float pv_current_l3 = 7;
+
+  float power_factor = 8;
+
+  uint32 feak_timestamp = 9;
+}
+
+message VPPEnergyStreamDetail {
+  uint32 sys_seq = 1;
+
+  repeated FeakEnergyItem energy_stream_feak = 2;
+}
+
+message VPPEnergyStreamDetailAck {
+  uint32 sys_seq = 1;
+
+  optional uint32 energy_stream_feak_num = 2;
+}
+
+message Spain4GMeterDataItem {
+  string sn = 1;
+
+  float spain_4g_meter_pwr = 2;
+
+  float spain_4g_meter_energy = 3;
+}
+
+message EmsSpain4GMeterData {
+  repeated Spain4GMeterDataItem meters = 1;
+}
+
+message EmsSpain4GMeterDataAck {
+  uint32 result = 1;
+}
+
+message Spain4GMeterCfgItem {
+  string sn = 1;
+
+  float ratio = 2;
+}
+
+message EmsSpain4GMeterCfgSet {
+  uint32 change_set = 1;
+
+  repeated Spain4GMeterCfgItem meters = 2;
+}
+
+message EmsSpain4GMeterCfgSetAck {
+  uint32 result = 1;
 }
 
 message EmsSpain4GMeterItem {
@@ -2994,11 +3159,25 @@ message EmsChangeReport {
 
   optional VppSwitchSet vpp_switch_set = 605;
 
+  optional VppPowerReportSet vpp_power_report_set = 606;
+
+  optional VppEnergyReportSet vpp_energy_report_set = 607;
+
+  optional VppPowerStatItem vpp_power_stat_item = 608;
+
+  optional uint32 sys_battery_capacity = 609;
+
+  optional float battery_max_charge_power = 610;
+
+  optional float battery_max_discharge_power = 611;
+
   optional IEEE20305ConnectStat ieee20305_connect_stat = 612;
 
   optional IEEE20305CtrlStat ieee20305_ctrl_stat = 613;
 
   optional uint32 ieee20305_last_ctrl_timestamp = 614;
+
+  optional uint32 ems_stop_all2 = 615;
 
   optional EmsSpain4GMeterItemgroup spain_4gmeter_group = 616;
 }
@@ -3247,4 +3426,38 @@ enum CLOUD_EDGE_OCV {
   BASE_MAX_OCV_SOC_MODE = 2;
 
   BASE_MIN_OCV_SOC_MODE = 3;
+}
+
+enum VppFallbackMode {
+  VPP_FALLBACK_SELF_USE = 0;
+
+  VPP_FALLBACK_BAT_IDLE = 1;
+
+  VPP_FALLBACK_INV_IDLE = 2;
+
+  VPP_FALLBACK_RESTORE = 3;
+}
+
+enum VppBatChgPwrMode {
+  VPP_BAT_CHG_TARGET_WITH_EXPORT = 0;
+
+  VPP_BAT_CHG_PV_PRIORITY = 1;
+
+  VPP_BAT_CHG_GRID_IMPORT_ADD = 2;
+}
+
+enum VppCtrlMode {
+  VPP_MODE_INVALID = 0;
+
+  VPP_MODE_SELF_USE = 1;
+
+  VPP_MODE_PV_CHG = 2;
+
+  VPP_MODE_BAT_DSG = 3;
+
+  VPP_MODE_BAT_CHG = 4;
+
+  VPP_MODE_BAT_STANDBY = 5;
+
+  VPP_MODE_LIMIT_EXPORT = 6;
 }
