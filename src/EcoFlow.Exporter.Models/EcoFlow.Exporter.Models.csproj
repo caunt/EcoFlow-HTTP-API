@@ -9,7 +9,7 @@
 
     <ItemGroup>
       <PackageReference Include="Esprima" Version="3.0.6" />
-      <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
+      <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
     </ItemGroup>
 
     <ItemGroup>
