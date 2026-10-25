@@ -1151,6 +1151,8 @@ message DisplayPropertyUpload {
 
   optional uint32 cms_batt_pow_in_remain = 134;
 
+  optional uint32 dsg_hysteresis_sta = 140;
+
   optional uint32 third_inv_offgrid_disconnect_cnt = 141;
 
   optional uint32 pv_surplus_dispatch_state = 143;

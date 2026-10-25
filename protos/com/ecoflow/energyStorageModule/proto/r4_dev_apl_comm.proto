@@ -1,0 +1,1349 @@
+syntax = "proto3";
+
+package com.ecoflow.energyStorageModule.proto;
+
+option java_package = "com.ecoflow.energyStorageModule.proto";
+
+message ModuleErrorItem {
+  uint32 row_no = 1;
+
+  optional uint32 module_addr = 2;
+
+  optional uint32 module_d_addr = 3;
+
+  optional uint32 errcode = 4;
+
+  optional uint32 err_level = 5;
+
+  optional uint32 timestamp = 6;
+}
+
+message AcInItem {
+  uint32 row_no = 1;
+
+  optional uint32 flow_info = 2;
+
+  optional float pow = 3;
+
+  optional float vol = 4;
+
+  optional float amp = 5;
+
+  optional uint32 plug_in_flag = 6;
+
+  optional uint32 freq = 7;
+
+  optional bool charger_flag = 8;
+
+  optional uint32 ac_in_chg_hal_pow_max = 9;
+
+  optional uint32 silence_chg_watt = 10;
+
+  optional AC_IN_CHG_MOD ac_in_chg_mode = 11;
+
+  optional uint32 ac_in_chg_pow_max = 12;
+}
+
+message DisplayCmsInfo {
+  uint32 row_no = 1;
+
+  optional uint32 cms_bms_run_state = 2;
+
+  optional float cms_batt_soc = 3;
+
+  optional float cms_batt_soh = 4;
+
+  optional uint32 cms_chg_dsg_state = 5;
+
+  optional uint32 cms_batt_full_energy = 6;
+
+  optional uint32 cms_dsg_rem_time = 7;
+
+  optional uint32 cms_chg_rem_time = 8;
+
+  optional uint32 cms_chg_disable = 13;
+
+  optional uint32 cms_dsg_disable = 14;
+}
+
+message SktVolSampleArray {
+  optional float skt_vol_item = 1;
+
+  optional float skt_vol_item2 = 2;
+
+  optional float skt_vol_item3 = 3;
+
+  optional float skt_vol_item4 = 4;
+
+  optional float skt_vol_item5 = 5;
+
+  optional float skt_vol_item6 = 6;
+}
+
+message ModuleErrorList {
+  repeated ModuleErrorItem module_error_item = 1;
+}
+
+message RuntimeCmsInfo {
+  uint32 row_no = 1;
+
+  optional float cms_batt_vol = 9;
+
+  optional float cms_batt_amp = 10;
+
+  optional float cms_chg_req_vol = 11;
+
+  optional float cms_chg_req_amp = 12;
+}
+
+message SafetyParam {
+  optional uint32 grid_code_index = 1;
+
+  optional float rated_power = 2;
+
+  optional uint32 pcs_recover_switch = 3;
+
+  optional float pcs_volt_recover_up_lim = 4;
+
+  optional float pcs_volt_recover_dn_lim = 5;
+
+  optional float pcs_fre_recover_up_lim = 6;
+
+  optional float pcs_fre_recover_dn_lim = 7;
+
+  optional uint32 pcs_connect_grid_time = 8;
+
+  optional uint32 pcs_fault_recover_time = 9;
+
+  optional uint32 pcs_volt_check_switch = 10;
+
+  optional float pcs_over_volt1 = 11;
+
+  optional float pcs_over_volt2 = 12;
+
+  optional float pcs_over_volt3 = 13;
+
+  optional float pcs_over_volt4 = 14;
+
+  optional uint32 pcs_over_volt_time1 = 15;
+
+  optional uint32 pcs_over_volt_time2 = 16;
+
+  optional uint32 pcs_over_volt_time3 = 17;
+
+  optional uint32 pcs_over_volt_time4 = 18;
+
+  optional float pcs_low_volt1 = 19;
+
+  optional float pcs_low_volt2 = 20;
+
+  optional float pcs_low_volt3 = 21;
+
+  optional float pcs_low_volt4 = 22;
+
+  optional uint32 pcs_low_volt_time1 = 23;
+
+  optional uint32 pcs_low_volt_time2 = 24;
+
+  optional uint32 pcs_low_volt_time3 = 25;
+
+  optional uint32 pcs_low_volt_time4 = 26;
+
+  optional uint32 pcs10min_over_volt_switch = 27;
+
+  optional float pcs10min_over_volt = 28;
+
+  optional uint32 pcs10min_over_volt_time = 29;
+
+  optional float pcs10min_recover_volt = 30;
+
+  optional uint32 pcs10min_recover_volt_time = 31;
+
+  optional uint32 pcs_freq_check_switch = 32;
+
+  optional float pcs_over_freq1 = 33;
+
+  optional float pcs_over_freq2 = 34;
+
+  optional float pcs_over_freq3 = 35;
+
+  optional float pcs_over_freq4 = 36;
+
+  optional uint32 pcs_over_freq_time1 = 37;
+
+  optional uint32 pcs_over_freq_time2 = 38;
+
+  optional uint32 pcs_over_freq_time3 = 39;
+
+  optional uint32 pcs_over_freq_time4 = 40;
+
+  optional float pcs_low_freq1 = 41;
+
+  optional float pcs_low_freq2 = 42;
+
+  optional float pcs_low_freq3 = 43;
+
+  optional float pcs_low_freq4 = 44;
+
+  optional uint32 pcs_low_freq_time1 = 45;
+
+  optional uint32 pcs_low_freq_time2 = 46;
+
+  optional uint32 pcs_low_freq_time3 = 47;
+
+  optional uint32 pcs_low_freq_time4 = 48;
+
+  optional uint32 pcs_vrt_switch = 49;
+
+  optional float pcs_hvrt_start1 = 50;
+
+  optional float pcs_hvrt_start2 = 51;
+
+  optional float pcs_hvrt_start3 = 52;
+
+  optional float pcs_hvrt_start4 = 53;
+
+  optional uint32 pcs_hvrt_protect_time1 = 54;
+
+  optional uint32 pcs_hvrt_protect_time2 = 55;
+
+  optional uint32 pcs_hvrt_protect_time3 = 56;
+
+  optional uint32 pcs_hvrt_protect_time4 = 57;
+
+  optional float pcs_lvrt_start1 = 58;
+
+  optional float pcs_lvrt_start2 = 59;
+
+  optional float pcs_lvrt_start3 = 60;
+
+  optional float pcs_lvrt_start4 = 61;
+
+  optional uint32 pcs_lvrt_protect_time1 = 62;
+
+  optional uint32 pcs_lvrt_protect_time2 = 63;
+
+  optional uint32 pcs_lvrt_protect_time3 = 64;
+
+  optional uint32 pcs_lvrt_protect_time4 = 65;
+
+  optional float pcs_hvrt_recover_volt = 66;
+
+  optional float pcs_lvrt_recover_volt = 67;
+
+  optional uint32 pcs_island_detect_switch = 68;
+
+  optional uint32 pcs_anti_flow_back_switch = 69;
+
+  optional uint32 pcs_g100_protect_switch = 70;
+
+  optional float pcs_g100_protect_export_curr_limit = 71;
+
+  optional float pcs_g100_protect_import_curr_limit = 72;
+
+  optional uint32 pcs_act_power_set_enable = 73;
+
+  optional float pcs_act_power_percent = 74;
+
+  optional float pcs_act_power_gradient = 75;
+
+  optional uint32 pcs_act_power_softstart_switch = 76;
+
+  optional uint32 pcs_act_power_softstart_time = 77;
+
+  optional uint32 pcs_ofdp_switch = 78;
+
+  optional uint32 pcs_ofdp_base_switch = 79;
+
+  optional float pcs_ofdp_start_point = 80;
+
+  optional float pcs_ofdp_recove_point = 81;
+
+  optional float pcs_ofdp_stop_point = 82;
+
+  optional float pcs_ofdp_gradient = 83;
+
+  optional uint32 pcs_ofdp_start_delay = 84;
+
+  optional uint32 pcs_ofdp_recover_delay = 85;
+
+  optional float pcs_ofdp_recover_gradient = 86;
+
+  optional uint32 pcs_ofdp_froze_switch = 87;
+
+  optional uint32 pcs_ofdp_lpf_time = 88;
+
+  optional uint32 pcs_ofdp_recover_gradient_enable = 89;
+
+  optional float pcs_ofdp_recover_hysteresis = 90;
+
+  optional float pcs_ofdp_cross_zero_point = 91;
+
+  optional uint32 pcs_ufip_switch = 92;
+
+  optional uint32 pcs_ufip_base_switch = 93;
+
+  optional float pcs_ufip_start_point = 94;
+
+  optional float pcs_ufip_recove_point = 95;
+
+  optional float pcs_ufip_stop_point = 96;
+
+  optional float pcs_ufip_gradient = 97;
+
+  optional uint32 pcs_ufip_start_delay = 98;
+
+  optional uint32 pcs_ufip_recover_delay = 99;
+
+  optional float pcs_ufip_recover_gradient = 100;
+
+  optional uint32 pcs_ufip_froze_switch = 101;
+
+  optional uint32 pcs_ufip_lpf_time = 102;
+
+  optional uint32 pcs_ufip_recover_gradient_enable = 103;
+
+  optional float pcs_ufip_recover_hysteresis = 104;
+
+  optional float pcs_ufip_cross_zero_point = 105;
+
+  optional uint32 pcs_ovdp_switch = 106;
+
+  optional float pcs_ovdp_lpf_time = 107;
+
+  optional float pcs_ovdp_volt_percent1 = 108;
+
+  optional float pcs_ovdp_volt_percent2 = 109;
+
+  optional float pcs_ovdp_volt_percent3 = 110;
+
+  optional float pcs_ovdp_volt_percent4 = 111;
+
+  optional float pcs_ovdp_power_percent_tag1 = 112;
+
+  optional float pcs_ovdp_power_percent_tag2 = 113;
+
+  optional float pcs_ovdp_power_percent_tag3 = 114;
+
+  optional float pcs_ovdp_power_percent_tag4 = 115;
+
+  optional uint32 pcs_uvdp_switch = 116;
+
+  optional float pcs_uvdp_lpf_time = 117;
+
+  optional float pcs_uvdp_volt_percent1 = 118;
+
+  optional float pcs_uvdp_volt_percent2 = 119;
+
+  optional float pcs_uvdp_volt_percent3 = 120;
+
+  optional float pcs_uvdp_volt_percent4 = 121;
+
+  optional float pcs_uvdp_power_percent_tag1 = 122;
+
+  optional float pcs_uvdp_power_percent_tag2 = 123;
+
+  optional float pcs_uvdp_power_percent_tag3 = 124;
+
+  optional float pcs_uvdp_power_percent_tag4 = 125;
+
+  optional uint32 pcs_freq_droop_switch = 126;
+
+  optional float pcs_over_freq_deadband = 127;
+
+  optional float pcs_under_freq_deadband = 128;
+
+  optional float pcs_over_freq_droop_coef = 129;
+
+  optional float pcs_under_freq_droop_coef = 130;
+
+  optional float pcs_freq_droop_lpf_time = 131;
+
+  optional uint32 pcs_react_pwr_mode = 132;
+
+  optional float pcs_pf_value_set = 133;
+
+  optional uint32 pcs_pf_mode_base_apperent_pwr_select = 134;
+
+  optional uint32 pcs_pf_mode_lpf_time = 135;
+
+  optional uint32 pcs_react_power_percent_mode_lpf_time = 136;
+
+  optional float pcs_react_power_percent = 137;
+
+  optional float pcs_qu_mode_vref_set = 138;
+
+  optional float pcs_qu_mode_volt1 = 139;
+
+  optional float pcs_qu_mode_volt2 = 140;
+
+  optional float pcs_qu_mode_volt3 = 141;
+
+  optional float pcs_qu_mode_volt4 = 142;
+
+  optional float pcs_qu_mode_react_pwr1 = 143;
+
+  optional float pcs_qu_mode_react_pwr2 = 144;
+
+  optional float pcs_qu_mode_react_pwr3 = 145;
+
+  optional float pcs_qu_mode_react_pwr4 = 146;
+
+  optional uint32 pcs_qu_mode_lpf_time = 147;
+
+  optional float pcs_qu_mode_pf_dn_limit = 148;
+
+  optional float pcs_qu_mode_lockin_power = 149;
+
+  optional float pcs_qu_mode_lockout_power = 150;
+
+  optional float pcs_qp_mode_act_pwr_perc1 = 151;
+
+  optional float pcs_qp_mode_act_pwr_perc2 = 152;
+
+  optional float pcs_qp_mode_act_pwr_perc3 = 153;
+
+  optional float pcs_qp_mode_act_pwr_perc4 = 154;
+
+  optional float pcs_qp_mode_act_pwr_perc5 = 155;
+
+  optional float pcs_qp_mode_act_pwr_perc6 = 156;
+
+  optional float pcs_qp_mode_act_pwr_perc7 = 157;
+
+  optional float pcs_qp_mode_act_pwr_perc8 = 158;
+
+  optional float pcs_qp_mode_react_pwr_perc1 = 159;
+
+  optional float pcs_qp_mode_react_pwr_perc2 = 160;
+
+  optional float pcs_qp_mode_react_pwr_perc3 = 161;
+
+  optional float pcs_qp_mode_react_pwr_perc4 = 162;
+
+  optional float pcs_qp_mode_react_pwr_perc5 = 163;
+
+  optional float pcs_qp_mode_react_pwr_perc6 = 164;
+
+  optional float pcs_qp_mode_react_pwr_perc7 = 165;
+
+  optional float pcs_qp_mode_react_pwr_perc8 = 166;
+
+  optional uint32 pcs_qp_mode_lpf_time = 167;
+
+  optional float pcs_cos_p_mode_act_pwr_percent1 = 168;
+
+  optional float pcs_cos_p_mode_act_pwr_percent2 = 169;
+
+  optional float pcs_cos_p_mode_act_pwr_percent3 = 170;
+
+  optional float pcs_cos_p_mode_act_pwr_percent4 = 171;
+
+  optional float pcs_cos_p_mode_act_pwr_percent5 = 172;
+
+  optional float pcs_cos_p_mode_act_pwr_percent6 = 173;
+
+  optional float pcs_cos_p_mode_act_pwr_percent7 = 174;
+
+  optional float pcs_cos_p_mode_act_pwr_percent8 = 175;
+
+  optional float pcs_cos_p_mode_pf1 = 176;
+
+  optional float pcs_cos_p_mode_pf2 = 177;
+
+  optional float pcs_cos_p_mode_pf3 = 178;
+
+  optional float pcs_cos_p_mode_pf4 = 179;
+
+  optional float pcs_cos_p_mode_pf5 = 180;
+
+  optional float pcs_cos_p_mode_pf6 = 181;
+
+  optional float pcs_cos_p_mode_pf7 = 182;
+
+  optional float pcs_cos_p_mode_pf8 = 183;
+
+  optional float pcs_lpf_time_to_tau_coef = 184;
+
+  optional uint32 pcs_ongrid_permit_serice = 185;
+
+  optional uint32 pcs_freq_protect_local_command = 186;
+
+  optional uint32 pcs_freq_protect_external_command = 187;
+
+  optional uint32 pcs_auto_test_quick_check_switch = 188;
+
+  optional uint32 pcs_auto_test_check_flag = 189;
+
+  optional uint32 pcs_auto_test_check_state = 190;
+
+  optional float pcs_auto_test_avg_ovp_protect_value = 191;
+
+  optional uint32 pcs_auto_test_avg_ovp_protect_cnt = 192;
+
+  optional float pcs_auto_test_ovp_protect_value = 193;
+
+  optional uint32 pcs_auto_test_ovp_protect_cnt = 194;
+
+  optional float pcs_auto_test_uvp1_protect_value = 195;
+
+  optional uint32 pcs_auto_test_uvp1_protect_cnt = 196;
+
+  optional float pcs_auto_test_uvp2_protect_value = 197;
+
+  optional uint32 pcs_auto_test_uvp2_protect_cnt = 198;
+
+  optional float pcs_auto_test_ofp_protect_value = 199;
+
+  optional uint32 pcs_auto_test_ofg_protect_cnt = 200;
+
+  optional float pcs_auto_test_ufp_protect_value = 201;
+
+  optional uint32 pcs_auto_test_ufp_protect_cnt = 202;
+
+  optional uint32 pcs_auto_test_percent = 203;
+
+  optional float pcs_volt_first_up_lim = 204;
+
+  optional float pcs_volt_first_dn_lim = 205;
+
+  optional float pcs_fre_first_up_lim = 206;
+
+  optional float pcs_fre_first_dn_lim = 207;
+
+  optional uint32 pcs_rocof_switch = 208;
+
+  optional float pcs_rocof_over_point = 209;
+
+  optional float pcs_rocof_over_detect_time = 210;
+
+  optional float pcs_rocof_over_recover_point = 211;
+
+  optional float pcs_rocof_over_recover_time = 212;
+}
+
+message FanItem {
+  uint32 row_no = 1;
+
+  optional uint32 fan_level = 2;
+
+  optional uint32 fan_err_flag = 3;
+}
+
+message DisplayDc12vItem {
+  uint32 row_no = 1;
+
+  optional uint32 flow_info = 2;
+
+  optional float pow = 3;
+
+  optional float pow1 = 4;
+
+  optional float pow2 = 5;
+
+  optional uint32 delay_close_remain_time = 8;
+
+  optional bool delay_close_enable = 9;
+
+  optional uint32 delay_close_time_out = 10;
+}
+
+message DisplayAcOutItem {
+  uint32 row_no = 1;
+
+  optional uint32 flow_info = 2;
+
+  optional uint32 ac_out_freq = 3;
+
+  optional float ac_out_real_freq = 4;
+
+  optional float vol = 5;
+
+  optional float amp = 6;
+
+  optional float ac_out_pow = 8;
+
+  optional uint32 ac_out_vol_type = 9;
+
+  optional float ac_out_power_factor = 10;
+}
+
+message AcDcPortInfo {
+  optional uint32 flow_info_ac2dc = 1;
+
+  optional uint32 flow_info_dc2ac = 2;
+
+  optional float pow_get_llc = 3;
+
+  optional float pow_get_ac = 4;
+}
+
+message ModuleInfoItem {
+  uint32 row_no = 1;
+
+  optional uint32 module_addr = 2;
+
+  optional uint32 module_d_addr = 3;
+
+  optional uint32 firm_ver = 4;
+
+  optional bool comm_online = 5;
+}
+
+message ModuleInfoList {
+  repeated ModuleInfoItem module_info_item = 1;
+}
+
+message DisplayDc12vList {
+  repeated DisplayDc12vItem display_dc12v_item = 1;
+}
+
+message LongRuntimeInfo {
+  optional bool long_runtime = 1;
+
+  optional uint32 long_runtime_scene = 2;
+
+  optional uint32 ac_in_real_load_scene = 3;
+
+  optional uint32 long_runtime_est_normal_min = 4;
+
+  optional uint32 long_runtime_est_long_min = 5;
+}
+
+message FanList {
+  repeated FanItem fan_item = 1;
+}
+
+message TouStrategy {
+  repeated uint32 tou_hours_strategy = 1;
+
+  optional uint32 tou_gird_chg_stop_soc = 2;
+}
+
+message UsbItem {
+  uint32 row_no = 1;
+
+  optional uint32 flow_info = 2;
+
+  optional float pow = 3;
+
+  optional float vol = 4;
+
+  optional float amp = 5;
+}
+
+message UsbList {
+  repeated UsbItem usb_item = 1;
+}
+
+message TimeTaskParamDetail {
+  TIME_TASK_DETAIL_TYPE time_task_detail_type = 1;
+
+  optional float task_val = 2;
+}
+
+message TimeTaskV2Item {
+  uint32 row_no = 1;
+
+  optional uint32 task_index = 2;
+
+  optional bool is_cfg = 3;
+
+  optional bool is_enable = 4;
+
+  optional uint32 conflict_flag = 5;
+
+  optional TIME_TASK_MODE time_mode = 6;
+
+  optional uint32 time_param = 7;
+
+  optional uint32 time_table = 8;
+
+  optional TIME_TASK_TYPE task_type = 9;
+
+  optional uint32 task_param = 10;
+
+  repeated TimeTaskParamDetail task_param_detail = 11;
+}
+
+message TimeTaskV2List {
+  repeated TimeTaskV2Item time_task = 1;
+}
+
+message ReqSmartCharge {
+  optional uint32 target_external_chg_wh = 1;
+
+  optional uint32 curr_storage_wh = 2;
+
+  optional uint32 accumulated_external_chg_wh = 3;
+
+  optional uint32 target_external_chg_finsh_timestamp = 4;
+
+  optional uint32 grid_chg_pow_max = 5;
+
+  optional uint32 external_chg_pow_max = 6;
+
+  optional uint32 device_min_charge_rate = 7;
+
+  optional string sn = 8;
+}
+
+message OutputPowerFactorList {
+  repeated float Output_power_factor = 1;
+}
+
+message GetIntelligentSchedule {
+  optional uint32 intelligent_schedule_mode = 1;
+
+  optional uint32 join_intelligent_schedule = 2;
+
+  repeated ReqSmartCharge require_smart_charge = 3;
+}
+
+message PcsDcInfo {
+  uint32 row_no = 1;
+
+  optional float temp_pcs_dc = 2;
+
+  optional uint32 mppt_monitor_flag = 3;
+
+  optional float mppt_recv_cms_chg_req_vol = 4;
+
+  optional float mppt_recv_cms_chg_req_amp = 5;
+
+  optional float pv_vin_ref = 6;
+
+  optional float pv2_vin_ref = 7;
+
+  optional float pv2_bus_vol = 8;
+
+  optional float mppt_bat_vol = 9;
+
+  optional float mppt_bat_amp = 10;
+
+  optional uint32 pv_pause_cnt = 11;
+
+  optional uint32 pv2_pause_cnt = 12;
+
+  optional uint32 mppt_fanspeed = 13;
+
+  optional sint32 ads_ntc_temp = 14;
+
+  optional uint32 mppt_hardware_ver = 15;
+
+  optional uint32 mppt_inter_fault = 16;
+
+  optional uint32 mppt_xt60_chg_type = 17;
+
+  optional uint32 mppt_fsmstate = 18;
+
+  optional uint32 mppt_ban_chg_flg = 19;
+
+  optional uint32 mppt_weak_source_flg = 20;
+
+  optional float mppt_input_curr_ref = 21;
+
+  optional float mppt_output_vol_ref = 22;
+}
+
+message BmsPortInfo {
+  optional uint32 flow_info_bms_dsg = 1;
+
+  optional uint32 flow_info_bms_chg = 2;
+
+  optional float pow_get_bms = 3;
+}
+
+message TypecItem {
+  uint32 row_no = 1;
+
+  optional uint32 flow_info = 2;
+
+  optional float pow = 3;
+
+  optional float vol = 4;
+
+  optional float amp = 5;
+
+  optional bool plug_in_flag = 6;
+
+  optional uint32 typec_out_hal_pow_max = 7;
+
+  optional uint32 typec_out_cfg_pow_max = 8;
+
+  optional uint32 type = 9;
+
+  optional uint32 pv_payload_type = 10;
+}
+
+message TypecList {
+  repeated TypecItem typec_item = 1;
+}
+
+message SktOcpArray {
+  optional float skt_ocp_item = 1;
+
+  optional float skt_ocp_item2 = 2;
+
+  optional float skt_ocp_item3 = 3;
+
+  optional float skt_ocp_item4 = 4;
+
+  optional float skt_ocp_item5 = 5;
+
+  optional float skt_ocp_item6 = 6;
+}
+
+message PcsAcInfo {
+  uint32 row_no = 1;
+
+  optional uint32 ac_phase_type = 2;
+
+  optional uint32 pcs_work_mode = 3;
+
+  optional float temp_pcs_ac = 4;
+
+  optional float plug_in_info_l1_vol = 5;
+
+  optional float plug_in_info_l1_amp = 6;
+
+  optional float plug_in_info_l2_vol = 7;
+
+  optional float plug_in_info_l2_amp = 8;
+
+  optional float plug_in_info_acp_l1_vol = 9;
+
+  optional float plug_in_info_acp_l1l2_vol = 10;
+
+  optional uint32 inv_monitor_flag = 11;
+
+  optional uint32 inv_main_fsmstate = 12;
+
+  optional uint32 l1_main_fsmstate = 13;
+
+  optional uint32 l2_main_fsmstate = 14;
+
+  optional float plug_in_info_pfc_out_vol = 15;
+
+  optional float pow_get_l1 = 16;
+
+  optional float pow_get_l2 = 17;
+
+  optional float inv_bus_vol = 18;
+
+  optional sint32 inv_ntc_temp2 = 19;
+
+  optional sint32 inv_ntc_temp3 = 20;
+
+  optional uint32 llc_monitor_flag = 21;
+
+  optional sint32 llc_ntc_temp = 22;
+
+  optional uint32 llc_fsmstate = 23;
+
+  optional uint32 pd_to_inv_dsg_mode = 24;
+
+  optional float dcdc_chg_req_cur = 25;
+
+  optional float llc_recv_cms_chg_req_vol = 26;
+
+  optional float inv_to_llc_ac_pow_lim = 27;
+
+  optional float llc_bat_vol = 28;
+
+  optional float llc_bat_cur = 29;
+
+  optional float llc_bus_vol = 30;
+
+  optional uint32 llc_all_err = 31;
+
+  optional float llc_vbus_tag = 32;
+
+  optional uint32 llc_region_code = 33;
+
+  optional uint32 llc_ac_chg_cmd = 34;
+
+  optional uint32 llc_ac_out_sta = 35;
+
+  optional uint32 llc_ban_dsg_flg = 36;
+
+  optional uint32 llc_ban_chg_flg = 37;
+
+  optional uint32 llc_dc_fsm_sta = 38;
+
+  optional uint32 llc_ac_aux_ready = 39;
+
+  optional uint32 llc_dc_aux_ready = 40;
+
+  optional uint32 llc_ac_grid_sps_sta = 41;
+
+  optional uint32 llc_pfc_ok = 42;
+
+  optional uint32 llc_chg_cmd = 43;
+
+  optional uint32 llc_inv_ok = 44;
+
+  optional uint32 llc_pwm_flag = 45;
+
+  optional uint32 llc_is_pll_ok = 46;
+
+  optional uint32 llc_inv_phase_sync_ok = 47;
+
+  optional float llc_inv_ctrl_power = 48;
+}
+
+message DisplayAcOutList {
+  repeated DisplayAcOutItem display_ac_out_item = 1;
+}
+
+message TimeTaskItem {
+  uint32 row_no = 1;
+
+  optional uint32 task_index = 2;
+
+  optional bool is_valid = 3;
+
+  optional bool is_cfg = 4;
+
+  optional bool is_enable = 5;
+
+  optional uint32 conflict_flag = 6;
+
+  optional uint32 type = 7;
+
+  optional uint32 time_mode = 8;
+
+  optional uint32 time_param = 9;
+
+  repeated uint32 time_table = 10;
+}
+
+message TimeTaskList {
+  repeated TimeTaskItem time_task = 1;
+}
+
+message DeviceOtherProperty {
+  optional uint32 utc_time = 1;
+
+  optional TouStrategy tou_strategy = 2;
+
+  optional TimeTaskList time_task_list = 3;
+
+  optional TimeTaskV2List time_task_v2_list = 4;
+}
+
+message AcInList {
+  repeated AcInItem ac_in_item = 1;
+}
+
+message PvItem {
+  uint32 row_no = 1;
+
+  optional uint32 flow_info = 2;
+
+  optional float pow = 3;
+
+  optional float vol = 4;
+
+  optional float amp = 5;
+
+  optional float temp = 6;
+
+  optional uint32 plug_in_flag = 7;
+
+  optional uint32 type = 8;
+
+  optional bool charger_flag = 9;
+
+  optional uint32 pv_vol_type = 10;
+
+  optional uint32 pv_vol_low_flag = 11;
+
+  optional uint32 pv_weak_source_flag = 12;
+}
+
+message PvList {
+  repeated PvItem pv_item = 1;
+}
+
+message DisplayPropertyUpload {
+  optional uint32 ac_in_chg_hal_pow_max = 7;
+
+  optional uint32 silence_chg_watt = 8;
+
+  optional uint32 cms_batt_pow_out_max = 12;
+
+  optional uint32 cms_batt_pow_in_max = 13;
+
+  optional POWER_STATE power_state = 15;
+
+  optional float pow_in_sum_w = 16;
+
+  optional float pow_out_sum_w = 17;
+
+  optional AcDcPortInfo ac_dc_port_info = 25;
+
+  optional BmsPortInfo bms_port_info = 26;
+
+  optional ModuleInfoList module_info_list = 106;
+
+  optional bool ultra_emergency = 53;
+
+  optional bool long_runtime = 54;
+
+  optional PvList pv_list = 22;
+
+  optional AcInList ac_in_list = 23;
+
+  optional UsbList usb_list = 28;
+
+  optional OutputPowerFactorList output_power_factor_list = 70;
+
+  optional DisplayAcOutList display_ac_out_list = 84;
+
+  optional DisplayDc12vList display_dc12v_list = 94;
+
+  optional TypecList typec_list = 30;
+
+  optional uint32 lcd_light = 40;
+
+  optional uint32 dev_standby_time = 41;
+
+  optional uint32 screen_off_time = 42;
+
+  optional uint32 ac_standby_time = 43;
+
+  optional uint32 long_runtime_scene = 44;
+
+  optional uint32 ac_out_freq = 63;
+
+  optional LongRuntimeInfo long_runtime_info = 108;
+
+  optional uint32 std_proto_version = 3;
+
+  optional uint32 llc_hv_lv_flag = 5;
+
+  optional ModuleErrorList module_error_list = 34;
+
+  optional DisplayCmsInfo display_cms_info = 58;
+
+  optional uint32 flow_info_ac_out_open = 66;
+
+  optional uint32 cms_max_chg_soc = 51;
+
+  optional uint32 cms_min_dsg_soc = 52;
+
+  optional bool xboost_en = 59;
+
+  optional FanList fan_list = 62;
+
+  optional bool output_power_off_memory = 64;
+}
+
+message RuntimePropertyUpload {
+  optional SktOcpArray skt_ocp_array = 81;
+
+  optional RuntimeCmsInfo runtime_cms_info = 58;
+
+  optional SktVolSampleArray skt_vol_sample_array = 87;
+
+  optional PcsAcInfo pcs_ac_info = 82;
+
+  optional PcsDcInfo pcs_dc_info = 83;
+}
+
+message PropertyCmd {
+  uint32 action_id = 1;
+
+  optional bool ultra_emergency = 53;
+
+  optional bool long_runtime = 54;
+
+  optional AC_IN_CHG_MOD ac_in_chg_mode = 29;
+
+  optional uint32 lcd_light = 40;
+
+  optional uint32 dev_standby_time = 41;
+
+  optional uint32 screen_off_time = 42;
+
+  optional uint32 ac_standby_time = 43;
+
+  optional uint32 long_runtime_scene = 44;
+
+  optional uint32 ac_out_freq = 63;
+
+  optional uint32 ac_in_chg_pow_max = 97;
+
+  optional uint32 cms_max_chg_soc = 51;
+
+  optional uint32 cms_min_dsg_soc = 52;
+
+  optional bool xboost_en = 59;
+}
+
+message PropertyCmdAck {
+  uint32 action_id = 1;
+
+  bool cmd_ok = 2;
+
+  optional bool ultra_emergency = 53;
+
+  optional bool long_runtime = 54;
+
+  optional AC_IN_CHG_MOD ac_in_chg_mode = 29;
+
+  optional uint32 lcd_light = 40;
+
+  optional uint32 dev_standby_time = 41;
+
+  optional uint32 screen_off_time = 42;
+
+  optional uint32 ac_standby_time = 43;
+
+  optional uint32 long_runtime_scene = 44;
+
+  optional uint32 ac_out_freq = 63;
+
+  optional uint32 ac_in_chg_pow_max = 97;
+
+  optional uint32 cms_max_chg_soc = 51;
+
+  optional uint32 cms_min_dsg_soc = 52;
+
+  optional bool xboost_en = 59;
+}
+
+message ActionCmd {
+  uint32 action_id = 1;
+
+  optional POWER_STATE power_state = 8;
+
+  optional uint32 reset_factory_setting = 17;
+
+  optional uint32 utc_time = 18;
+
+  optional bool output_power_off_memory = 20;
+
+  optional uint32 cfg_ac_out_open = 22;
+
+  optional bool get_device_other_property = 25;
+}
+
+message ActionCmdAck {
+  uint32 action_id = 1;
+
+  bool cmd_ok = 2;
+
+  optional uint32 reset_factory_setting = 17;
+
+  optional DeviceOtherProperty other_property = 26;
+
+  optional GetIntelligentSchedule cfg_read_intelligent_schedule = 27;
+}
+
+message LogItem {
+  uint32 unix_time = 1;
+
+  uint32 ms = 2;
+
+  uint32 event_id = 3;
+
+  repeated sint32 event_detail = 4;
+}
+
+message EventPush {
+  uint32 event_ver = 1;
+
+  uint32 event_seq = 2;
+
+  repeated LogItem event_item = 3;
+
+  optional uint32 event_type = 4;
+}
+
+message EventAck {
+  uint32 result = 1;
+
+  uint32 event_seq = 2;
+
+  uint32 event_item_num = 3;
+}
+
+message DisplaySafetyParamUpload {
+  optional SafetyParam safety_param = 60;
+}
+
+message DevRequest {
+  uint32 request_id = 1;
+
+  bool need_forward = 2;
+
+  uint32 dev_utc_time = 3;
+
+  sint32 dev_utc_timezone = 4;
+
+  optional string cfg_utc_timezone_id = 5;
+}
+
+message DevRequestAck {
+  uint32 request_id = 1;
+
+  uint32 require_ok = 2;
+
+  bool need_forward = 3;
+}
+
+message Properties {
+  repeated uint32 property_id = 1;
+}
+
+message PropertyRead {
+  uint32 method = 1;
+
+  optional uint32 type = 2;
+
+  optional Properties properties = 3;
+}
+
+message PropertyReadAck {
+  optional DeviceOtherProperty other_property = 3;
+}
+
+message AppRequestBpEuLawData {
+  string bp_sn = 1;
+
+  optional uint32 app_to_bms_launch_date = 2;
+
+  optional uint32 app_launch_date_set_type = 3;
+
+  optional uint32 app_to_bms_reset_flag = 4;
+
+  optional uint32 bms_data_upload_en = 5;
+}
+
+message AppRuquestBpEuLawDataAck {
+  string pack_sn = 1;
+
+  optional uint32 soh = 2;
+
+  optional uint32 accu_chg_cap = 3;
+
+  optional uint32 accu_dsg_cap = 4;
+
+  optional uint32 accu_chg_energy = 5;
+
+  optional uint32 accu_dsg_energy = 6;
+
+  optional uint32 deep_dsg_cnt = 7;
+
+  optional uint32 high_temp_use_time = 8;
+
+  optional uint32 low_temp_use_time = 9;
+
+  optional uint32 high_temp_chg_time = 10;
+
+  optional uint32 low_temp_chg_time = 11;
+
+  optional uint32 bp_launch_date = 12;
+
+  optional uint32 bp_cycles = 13;
+
+  optional float bp_power_capability = 14;
+
+  optional float bp_round_trip_eff = 15;
+
+  optional float bp_self_dsg_rate = 16;
+
+  optional float bp_ohm_res = 17;
+
+  optional BpResetType bp_reset_flag = 18;
+
+  optional AppDateType bp_launch_date_flag = 19;
+
+  optional uint32 num = 20;
+}
+
+enum TIME_TASK_DETAIL_TYPE {
+  TIME_TASK_DETAIL_IDLE = 0;
+
+  TIME_TASK_DETAIL_POW = 1;
+
+  TIME_TASK_DETAIL_TEMP = 2;
+
+  TIME_TASK_DETAIL_LEVEL = 3;
+
+  TIME_TASK_DETAIL_SOC = 4;
+}
+
+enum AC_IN_CHG_MOD {
+  AC_IN_CHG_MOD_SELF_DEF_POW = 0;
+
+  AC_IN_CHG_MOD_BAT_OPTIMAL_POW = 1;
+
+  AC_IN_CHG_MOD_SILENCE = 2;
+}
+
+enum TIME_TASK_TYPE {
+  TIME_TASK_TYPE_AC_CHG = 0;
+
+  TIME_TASK_TYPE_AC_DSG = 1;
+
+  TIME_TASK_TYPE_AC2_DSG = 2;
+
+  TIME_TASK_TYPE_DC_CHG = 3;
+
+  TIME_TASK_TYPE_DC2_CHG = 4;
+
+  TIME_TASK_TYPE_DC_DSG = 5;
+
+  TIME_TASK_TYPE_OIL_ON = 6;
+
+  TIME_TASK_TYPE_OIL_OFF = 7;
+
+  TIME_TASK_TYPE_USB_CHG = 8;
+
+  TIME_TASK_TYPE_USB_DSG = 9;
+
+  TIME_TASK_TYPE_AC_BYPASS = 10;
+
+  TIME_TASK_TYPE_AC_DSG_ONLY = 11;
+
+  TIME_TASK_TYPE_SHARING_SOC = 12;
+}
+
+enum TIME_TASK_MODE {
+  TIME_TASK_MODE_RESV = 0;
+
+  TIME_TASK_MODE_PER_WEEK = 1;
+
+  TIME_TASK_MODE_ONCE = 2;
+}
+
+enum POWER_STATE {
+  POWER_STATE_RESV = 0;
+
+  POWER_STATE_ON = 1;
+
+  POWER_STATE_OFF = 2;
+}
+
+enum AppDateType {
+  NONE_SET = 0;
+
+  APP_AUTO_SET = 1;
+
+  APP_MANUAL_SET = 2;
+
+  BMS_AUTO_SET = 3;
+}
+
+enum BpResetType {
+  NONE_RESET_VAL = 0;
+
+  HAS_RESET_VAL = 1;
+
+  NEED_RESET_VAL = 2;
+
+  MASTER_RESET = 3;
+}
