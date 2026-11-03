@@ -121,6 +121,8 @@ jobs:
             fi
             
             cd "$rid"
+            # Artifacts do not preserve file permissions, so restore the executable bit before archiving
+            chmod +x "$executableFileName"
             env XZ_OPT="$architectureFilter -9e -T0" tar -cJf "../../release-archives/${rid}.tar.xz" "$executableFileName"
             cd ..
           done
