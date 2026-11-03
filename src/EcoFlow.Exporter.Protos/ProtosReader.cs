@@ -253,14 +253,16 @@ public static class ProtosReader
         {
             var fileDescriptorProto = item.FileDescriptorProto;
 
-            // If name is nested, it is likely correct and we can skip it
-            if (fileDescriptorProto.Name.Contains('/'))
+            // If package is nested, the file is properly authored (e.g. google/protobuf) and its name is correct
+            if (fileDescriptorProto.Package.Contains('.'))
                 return;
 
-            // Name
+            // Name may still be a build path shared by unrelated files (e.g. app/src/main/proto),
+            // so keep only the file name and scope it by the Java outer class, which is unique per file
             var directory = item.ProtoName.Replace('.', '/');
+            var fileName = Path.GetFileName(fileDescriptorProto.Name);
 
-            fileDescriptorProto.Name = $"{directory}/{fileDescriptorProto.Name}";
+            fileDescriptorProto.Name = $"{directory}/{fileName}";
         }
 
         void RepairPackage(Item item)

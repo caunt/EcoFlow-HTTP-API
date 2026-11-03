@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package com.ecoflow.energyStorageModule.proto;
+package ecoflow.energyStorageModule.proto.R4DevAplComm;
 
 option java_package = "com.ecoflow.energyStorageModule.proto";
 
@@ -16,6 +16,32 @@ message ModuleErrorItem {
   optional uint32 err_level = 5;
 
   optional uint32 timestamp = 6;
+}
+
+message AcInItem {
+  uint32 row_no = 1;
+
+  optional uint32 flow_info = 2;
+
+  optional float pow = 3;
+
+  optional float vol = 4;
+
+  optional float amp = 5;
+
+  optional uint32 plug_in_flag = 6;
+
+  optional uint32 freq = 7;
+
+  optional bool charger_flag = 8;
+
+  optional uint32 ac_in_chg_hal_pow_max = 9;
+
+  optional uint32 silence_chg_watt = 10;
+
+  optional AC_IN_CHG_MOD ac_in_chg_mode = 11;
+
+  optional uint32 ac_in_chg_pow_max = 12;
 }
 
 message DisplayCmsInfo {
@@ -68,360 +94,6 @@ message RuntimeCmsInfo {
   optional float cms_chg_req_vol = 11;
 
   optional float cms_chg_req_amp = 12;
-}
-
-message FanItem {
-  uint32 row_no = 1;
-
-  optional uint32 fan_level = 2;
-
-  optional uint32 fan_err_flag = 3;
-}
-
-message AcpItem {
-  uint32 row_no = 1;
-
-  optional float pow_get_acp = 2;
-
-  optional uint32 flow_info_acp_in = 3;
-
-  optional uint32 flow_info_acp_out = 4;
-
-  optional uint32 acp_in_flag = 5;
-
-  optional uint32 acp_dsg_chg = 6;
-
-  optional bool acp_charger_flag = 7;
-
-  optional uint32 acp_type = 8;
-
-  optional uint32 acp_detail = 9;
-
-  optional string acp_sn = 10;
-
-  optional uint32 acp_run_state = 11;
-
-  optional uint32 acp_err_code = 12;
-
-  optional uint32 acp_firm_ver = 13;
-
-  optional bytes acp_resv = 14;
-
-  optional uint32 acp_chg_pow_max = 15;
-
-  optional float vol = 16;
-
-  optional float amp = 17;
-
-  optional uint32 freq = 18;
-
-  optional uint32 acp_chg_amp_max = 19;
-
-  optional ACP_CHG_MODE acp_chg_mode = 20;
-
-  optional uint32 acp_chg_soc_min = 21;
-
-  optional bool acp_chg_manual_ctrl = 22;
-}
-
-message AcDcPortInfo {
-  optional uint32 flow_info_ac2dc = 1;
-
-  optional uint32 flow_info_dc2ac = 2;
-
-  optional float pow_get_llc = 3;
-
-  optional float pow_get_ac = 4;
-}
-
-message CfgIntelligentScheduleMode {
-  optional uint32 intelligent_schedule_mode = 1;
-
-  optional uint32 join_intelligent_schedule = 2;
-}
-
-message FanList {
-  repeated FanItem fan_item = 1;
-}
-
-message AcpList {
-  repeated AcpItem acp_item = 1;
-}
-
-message UsbItem {
-  uint32 row_no = 1;
-
-  optional uint32 flow_info = 2;
-
-  optional float pow = 3;
-
-  optional float vol = 4;
-
-  optional float amp = 5;
-}
-
-message UsbList {
-  repeated UsbItem usb_item = 1;
-}
-
-message CfgBmsPushAck {
-  optional bool bms_heartbeap_open = 1;
-
-  optional bool bms_health_open = 2;
-}
-
-message TimeScheduleTaskItem {
-  uint32 start_timestamp = 1;
-
-  uint32 end_timestamp = 2;
-
-  uint32 grid_chg_wh = 3;
-
-  uint32 grid_dischg_wh = 4;
-
-  uint32 chg_wh = 5;
-
-  uint32 dischg_wh = 6;
-
-  uint32 v2h_output_wh = 7;
-}
-
-message CfgTimeScheduleTask {
-  repeated TimeScheduleTaskItem time_schedule_task_item_list = 1;
-}
-
-message ReqSmartCharge {
-  optional uint32 target_external_chg_wh = 1;
-
-  optional uint32 curr_storage_wh = 2;
-
-  optional uint32 accumulated_external_chg_wh = 3;
-
-  optional uint32 target_external_chg_finsh_timestamp = 4;
-
-  optional uint32 grid_chg_pow_max = 5;
-
-  optional uint32 external_chg_pow_max = 6;
-
-  optional uint32 device_min_charge_rate = 7;
-
-  optional string sn = 8;
-}
-
-message ReqIntelligentSchedule {
-  optional uint32 req_intelligent_schedule_state = 1;
-
-  optional ReqSmartCharge require_smart_charge = 2;
-
-  optional uint32 firmware_version = 3;
-}
-
-message PcsDcInfo {
-  uint32 row_no = 1;
-
-  optional float temp_pcs_dc = 2;
-
-  optional uint32 mppt_monitor_flag = 3;
-
-  optional float mppt_recv_cms_chg_req_vol = 4;
-
-  optional float mppt_recv_cms_chg_req_amp = 5;
-
-  optional float pv_vin_ref = 6;
-
-  optional float pv2_vin_ref = 7;
-
-  optional float pv2_bus_vol = 8;
-
-  optional float mppt_bat_vol = 9;
-
-  optional float mppt_bat_amp = 10;
-
-  optional uint32 pv_pause_cnt = 11;
-
-  optional uint32 pv2_pause_cnt = 12;
-
-  optional uint32 mppt_fanspeed = 13;
-
-  optional sint32 ads_ntc_temp = 14;
-
-  optional uint32 mppt_hardware_ver = 15;
-
-  optional uint32 mppt_inter_fault = 16;
-
-  optional uint32 mppt_xt60_chg_type = 17;
-
-  optional uint32 mppt_fsmstate = 18;
-
-  optional uint32 mppt_ban_chg_flg = 19;
-
-  optional uint32 mppt_weak_source_flg = 20;
-
-  optional float mppt_input_curr_ref = 21;
-
-  optional float mppt_output_vol_ref = 22;
-}
-
-message CfgBmsPush {
-  optional bool bms_heartbeap_open = 1;
-
-  optional bool bms_health_open = 2;
-
-  optional uint32 bms_heartbeap_freq = 3;
-
-  optional uint32 bms_health_freq = 4;
-}
-
-message PcsAcInfo {
-  uint32 row_no = 1;
-
-  optional uint32 ac_phase_type = 2;
-
-  optional uint32 pcs_work_mode = 3;
-
-  optional float temp_pcs_ac = 4;
-
-  optional float plug_in_info_l1_vol = 5;
-
-  optional float plug_in_info_l1_amp = 6;
-
-  optional float plug_in_info_l2_vol = 7;
-
-  optional float plug_in_info_l2_amp = 8;
-
-  optional float plug_in_info_acp_l1_vol = 9;
-
-  optional float plug_in_info_acp_l1l2_vol = 10;
-
-  optional uint32 inv_monitor_flag = 11;
-
-  optional uint32 inv_main_fsmstate = 12;
-
-  optional uint32 l1_main_fsmstate = 13;
-
-  optional uint32 l2_main_fsmstate = 14;
-
-  optional float plug_in_info_pfc_out_vol = 15;
-
-  optional float pow_get_l1 = 16;
-
-  optional float pow_get_l2 = 17;
-
-  optional float inv_bus_vol = 18;
-
-  optional sint32 inv_ntc_temp2 = 19;
-
-  optional sint32 inv_ntc_temp3 = 20;
-
-  optional uint32 llc_monitor_flag = 21;
-
-  optional sint32 llc_ntc_temp = 22;
-
-  optional uint32 llc_fsmstate = 23;
-
-  optional uint32 pd_to_inv_dsg_mode = 24;
-
-  optional float dcdc_chg_req_cur = 25;
-
-  optional float llc_recv_cms_chg_req_vol = 26;
-
-  optional float inv_to_llc_ac_pow_lim = 27;
-
-  optional float llc_bat_vol = 28;
-
-  optional float llc_bat_cur = 29;
-
-  optional float llc_bus_vol = 30;
-
-  optional uint32 llc_all_err = 31;
-
-  optional float llc_vbus_tag = 32;
-
-  optional uint32 llc_region_code = 33;
-
-  optional uint32 llc_ac_chg_cmd = 34;
-
-  optional uint32 llc_ac_out_sta = 35;
-
-  optional uint32 llc_ban_dsg_flg = 36;
-
-  optional uint32 llc_ban_chg_flg = 37;
-
-  optional uint32 llc_dc_fsm_sta = 38;
-
-  optional uint32 llc_ac_aux_ready = 39;
-
-  optional uint32 llc_dc_aux_ready = 40;
-
-  optional uint32 llc_ac_grid_sps_sta = 41;
-
-  optional uint32 llc_pfc_ok = 42;
-
-  optional uint32 llc_chg_cmd = 43;
-
-  optional uint32 llc_inv_ok = 44;
-
-  optional uint32 llc_pwm_flag = 45;
-
-  optional uint32 llc_is_pll_ok = 46;
-
-  optional uint32 llc_inv_phase_sync_ok = 47;
-
-  optional float llc_inv_ctrl_power = 48;
-}
-
-message pv_dc_chg_setting_list_2 {
-  optional uint32 pv_plug_index = 1;
-
-  optional pv_chg_vol_spec pv_chg_vol_spec = 2;
-
-  optional uint32 pv_chg_amp_limit = 3;
-}
-
-message cms_oil_self_start {
-  optional uint32 soc_off = 1;
-
-  optional uint32 sco_on = 2;
-
-  optional bool soc_switch = 3;
-}
-
-message AcInItem {
-  uint32 row_no = 1;
-
-  optional uint32 flow_info = 2;
-
-  optional float pow = 3;
-
-  optional float vol = 4;
-
-  optional float amp = 5;
-
-  optional uint32 plug_in_flag = 6;
-
-  optional uint32 freq = 7;
-
-  optional bool charger_flag = 8;
-
-  optional uint32 ac_in_chg_hal_pow_max = 9;
-
-  optional uint32 silence_chg_watt = 10;
-
-  optional AC_IN_CHG_MOD ac_in_chg_mode = 11;
-
-  optional uint32 ac_in_chg_pow_max = 12;
-}
-
-message AcInList {
-  repeated AcInItem ac_in_item = 1;
-}
-
-message PropertyUploadService {
-  uint32 commc_timeout = 1;
-
-  sint32 display_property_upload_period = 2;
-
-  sint32 runtime_property_upload_period = 3;
 }
 
 message SafetyParam {
@@ -850,6 +522,32 @@ message SafetyParam {
   optional float pcs_rocof_over_recover_time = 212;
 }
 
+message FanItem {
+  uint32 row_no = 1;
+
+  optional uint32 fan_level = 2;
+
+  optional uint32 fan_err_flag = 3;
+}
+
+message DisplayDc12vItem {
+  uint32 row_no = 1;
+
+  optional uint32 flow_info = 2;
+
+  optional float pow = 3;
+
+  optional float pow1 = 4;
+
+  optional float pow2 = 5;
+
+  optional uint32 delay_close_remain_time = 8;
+
+  optional bool delay_close_enable = 9;
+
+  optional uint32 delay_close_time_out = 10;
+}
+
 message DisplayAcOutItem {
   uint32 row_no = 1;
 
@@ -870,8 +568,14 @@ message DisplayAcOutItem {
   optional float ac_out_power_factor = 10;
 }
 
-message DisplayAcOutList {
-  repeated DisplayAcOutItem display_ac_out_item = 1;
+message AcDcPortInfo {
+  optional uint32 flow_info_ac2dc = 1;
+
+  optional uint32 flow_info_dc2ac = 2;
+
+  optional float pow_get_llc = 3;
+
+  optional float pow_get_ac = 4;
 }
 
 message ModuleInfoItem {
@@ -890,26 +594,24 @@ message ModuleInfoList {
   repeated ModuleInfoItem module_info_item = 1;
 }
 
-message CfgIntelligentColdBootMode {
-  optional uint32 cfg_is_in_cold_state = 1;
+message DisplayDc12vList {
+  repeated DisplayDc12vItem display_dc12v_item = 1;
 }
 
-message PropertyUploadPeriod {
-  sint32 display_property_full_upload_period = 1;
+message LongRuntimeInfo {
+  optional bool long_runtime = 1;
 
-  sint32 display_property_incremental_upload_period = 2;
+  optional uint32 long_runtime_scene = 2;
 
-  sint32 runtime_property_full_upload_period = 3;
+  optional uint32 ac_in_real_load_scene = 3;
 
-  sint32 runtime_property_incremental_upload_period = 4;
+  optional uint32 long_runtime_est_normal_min = 4;
+
+  optional uint32 long_runtime_est_long_min = 5;
 }
 
-message TimezoneChangeItem {
-  uint32 row_no = 1;
-
-  optional uint32 utc_time = 2;
-
-  optional sint32 utc_timezone = 3;
+message FanList {
+  repeated FanItem fan_item = 1;
 }
 
 message TouStrategy {
@@ -918,22 +620,26 @@ message TouStrategy {
   optional uint32 tou_gird_chg_stop_soc = 2;
 }
 
-message DisplayDc24vItem {
+message UsbItem {
   uint32 row_no = 1;
 
   optional uint32 flow_info = 2;
 
   optional float pow = 3;
+
+  optional float vol = 4;
+
+  optional float amp = 5;
 }
 
-message DisplayDc24vList {
-  repeated DisplayDc24vItem display_dc24v_item = 1;
+message UsbList {
+  repeated UsbItem usb_item = 1;
 }
 
 message TimeTaskParamDetail {
   TIME_TASK_DETAIL_TYPE time_task_detail_type = 1;
 
-  float task_val = 2;
+  optional float task_val = 2;
 }
 
 message TimeTaskV2Item {
@@ -964,8 +670,26 @@ message TimeTaskV2List {
   repeated TimeTaskV2Item time_task = 1;
 }
 
-message TimezoneChangeList {
-  repeated TimezoneChangeItem time_zone_change_item = 1;
+message ReqSmartCharge {
+  optional uint32 target_external_chg_wh = 1;
+
+  optional uint32 curr_storage_wh = 2;
+
+  optional uint32 accumulated_external_chg_wh = 3;
+
+  optional uint32 target_external_chg_finsh_timestamp = 4;
+
+  optional uint32 grid_chg_pow_max = 5;
+
+  optional uint32 external_chg_pow_max = 6;
+
+  optional uint32 device_min_charge_rate = 7;
+
+  optional string sn = 8;
+}
+
+message OutputPowerFactorList {
+  repeated float Output_power_factor = 1;
 }
 
 message GetIntelligentSchedule {
@@ -976,40 +700,50 @@ message GetIntelligentSchedule {
   repeated ReqSmartCharge require_smart_charge = 3;
 }
 
-message BpdisplayItem {
+message PcsDcInfo {
   uint32 row_no = 1;
 
-  optional uint32 bp_err_code = 2;
+  optional float temp_pcs_dc = 2;
 
-  uint32 bp_num = 3;
+  optional uint32 mppt_monitor_flag = 3;
 
-  string bp_sn = 4;
+  optional float mppt_recv_cms_chg_req_vol = 4;
 
-  optional uint32 bp_soc = 5;
+  optional float mppt_recv_cms_chg_req_amp = 5;
 
-  optional float bp_vol = 6;
+  optional float pv_vin_ref = 6;
 
-  optional float bp_amp = 7;
+  optional float pv2_vin_ref = 7;
 
-  optional uint32 bp_remain_cap = 8;
+  optional float pv2_bus_vol = 8;
 
-  optional uint32 bp_design_cap = 9;
+  optional float mppt_bat_vol = 9;
 
-  optional uint32 bp_full_cap = 10;
+  optional float mppt_bat_amp = 10;
 
-  optional uint32 bp_chg_dsg_stat = 11;
+  optional uint32 pv_pause_cnt = 11;
 
-  optional uint32 bp_balance_sta = 12;
+  optional uint32 pv2_pause_cnt = 12;
 
-  optional uint32 bp_otp = 13;
+  optional uint32 mppt_fanspeed = 13;
 
-  optional uint32 bp_utp = 14;
+  optional sint32 ads_ntc_temp = 14;
 
-  optional sint32 bp_temp = 15;
-}
+  optional uint32 mppt_hardware_ver = 15;
 
-message BpDisplayList {
-  repeated BpdisplayItem bp_display_item = 1;
+  optional uint32 mppt_inter_fault = 16;
+
+  optional uint32 mppt_xt60_chg_type = 17;
+
+  optional uint32 mppt_fsmstate = 18;
+
+  optional uint32 mppt_ban_chg_flg = 19;
+
+  optional uint32 mppt_weak_source_flg = 20;
+
+  optional float mppt_input_curr_ref = 21;
+
+  optional float mppt_output_vol_ref = 22;
 }
 
 message BmsPortInfo {
@@ -1040,8 +774,6 @@ message TypecItem {
   optional uint32 type = 9;
 
   optional uint32 pv_payload_type = 10;
-
-  optional uint32 fast_charge_switch = 11;
 }
 
 message TypecList {
@@ -1062,36 +794,106 @@ message SktOcpArray {
   optional float skt_ocp_item6 = 6;
 }
 
-message DisplayBmsInfo {
+message PcsAcInfo {
   uint32 row_no = 1;
 
-  optional float bms_batt_soc = 2;
+  optional uint32 ac_phase_type = 2;
 
-  optional float bms_batt_soh = 3;
+  optional uint32 pcs_work_mode = 3;
 
-  optional uint32 bms_chg_dsg_state = 4;
+  optional float temp_pcs_ac = 4;
 
-  optional uint32 bms_design_cap = 5;
+  optional float plug_in_info_l1_vol = 5;
 
-  optional uint32 bms_dsg_rem_time = 6;
+  optional float plug_in_info_l1_amp = 6;
 
-  optional uint32 bms_chg_rem_time = 7;
+  optional float plug_in_info_l2_vol = 7;
 
-  optional sint32 bms_min_cell_temp = 8;
+  optional float plug_in_info_l2_amp = 8;
 
-  optional sint32 bms_max_cell_temp = 9;
+  optional float plug_in_info_acp_l1_vol = 9;
 
-  optional sint32 bms_min_mos_temp = 10;
+  optional float plug_in_info_acp_l1l2_vol = 10;
 
-  optional sint32 bms_max_mos_temp = 11;
+  optional uint32 inv_monitor_flag = 11;
 
-  optional string bms_main_sn = 12;
+  optional uint32 inv_main_fsmstate = 12;
 
-  optional uint32 bms_full_cap = 17;
+  optional uint32 l1_main_fsmstate = 13;
 
-  optional uint32 bms_remain_cap = 18;
+  optional uint32 l2_main_fsmstate = 14;
 
-  optional sint32 bms_temp = 32;
+  optional float plug_in_info_pfc_out_vol = 15;
+
+  optional float pow_get_l1 = 16;
+
+  optional float pow_get_l2 = 17;
+
+  optional float inv_bus_vol = 18;
+
+  optional sint32 inv_ntc_temp2 = 19;
+
+  optional sint32 inv_ntc_temp3 = 20;
+
+  optional uint32 llc_monitor_flag = 21;
+
+  optional sint32 llc_ntc_temp = 22;
+
+  optional uint32 llc_fsmstate = 23;
+
+  optional uint32 pd_to_inv_dsg_mode = 24;
+
+  optional float dcdc_chg_req_cur = 25;
+
+  optional float llc_recv_cms_chg_req_vol = 26;
+
+  optional float inv_to_llc_ac_pow_lim = 27;
+
+  optional float llc_bat_vol = 28;
+
+  optional float llc_bat_cur = 29;
+
+  optional float llc_bus_vol = 30;
+
+  optional uint32 llc_all_err = 31;
+
+  optional float llc_vbus_tag = 32;
+
+  optional uint32 llc_region_code = 33;
+
+  optional uint32 llc_ac_chg_cmd = 34;
+
+  optional uint32 llc_ac_out_sta = 35;
+
+  optional uint32 llc_ban_dsg_flg = 36;
+
+  optional uint32 llc_ban_chg_flg = 37;
+
+  optional uint32 llc_dc_fsm_sta = 38;
+
+  optional uint32 llc_ac_aux_ready = 39;
+
+  optional uint32 llc_dc_aux_ready = 40;
+
+  optional uint32 llc_ac_grid_sps_sta = 41;
+
+  optional uint32 llc_pfc_ok = 42;
+
+  optional uint32 llc_chg_cmd = 43;
+
+  optional uint32 llc_inv_ok = 44;
+
+  optional uint32 llc_pwm_flag = 45;
+
+  optional uint32 llc_is_pll_ok = 46;
+
+  optional uint32 llc_inv_phase_sync_ok = 47;
+
+  optional float llc_inv_ctrl_power = 48;
+}
+
+message DisplayAcOutList {
+  repeated DisplayAcOutItem display_ac_out_item = 1;
 }
 
 message TimeTaskItem {
@@ -1128,16 +930,10 @@ message DeviceOtherProperty {
   optional TimeTaskList time_task_list = 3;
 
   optional TimeTaskV2List time_task_v2_list = 4;
-
-  optional uint32 get_pd_firm_ver = 5;
 }
 
-message StormPattern {
-  optional bool storm_pattern_enable = 1;
-
-  optional bool storm_pattern_open_flag = 2;
-
-  optional uint32 storm_pattern_end_time = 3;
+message AcInList {
+  repeated AcInItem ac_in_item = 1;
 }
 
 message PvItem {
@@ -1171,13 +967,9 @@ message PvList {
 }
 
 message DisplayPropertyUpload {
+  optional uint32 ac_in_chg_hal_pow_max = 7;
+
   optional uint32 silence_chg_watt = 8;
-
-  optional uint32 ac_out_dsg_hal_pow_max = 9;
-
-  optional uint32 acp_chg_hal_pow_max = 10;
-
-  optional uint32 acp_dsg_hal_pow_max = 11;
 
   optional uint32 cms_batt_pow_out_max = 12;
 
@@ -1189,51 +981,15 @@ message DisplayPropertyUpload {
 
   optional float pow_out_sum_w = 17;
 
-  optional DisplayDc24vList display_dc24v_list = 21;
-
   optional AcDcPortInfo ac_dc_port_info = 25;
 
   optional BmsPortInfo bms_port_info = 26;
 
   optional ModuleInfoList module_info_list = 106;
 
-  optional bool ac_fast_chg_flag = 33;
+  optional bool ultra_emergency = 53;
 
-  optional float pow_get_ac_lv_tt30_out = 39;
-
-  optional cms_oil_self_start cms_oil_self_start = 45;
-
-  optional pv_dc_chg_setting_list_2 pv_dc_chg_setting_list_2 = 47;
-
-  optional uint32 feed_grid_mode = 53;
-
-  optional uint32 ups_vol_max = 55;
-
-  optional uint32 ups_vol_min = 70;
-
-  optional GRID_STD_CODE grid_std_code = 73;
-
-  optional bool long_runtime = 75;
-
-  optional bool ultra_emergency = 78;
-
-  optional uint32 tou_mode_conflict_flag = 85;
-
-  optional uint32 time_task_conflict_flag = 92;
-
-  optional POWER_MODE power_mode = 94;
-
-  optional CfgIntelligentScheduleMode cfg_intelligent_schedule_mode = 96;
-
-  optional CfgTimeScheduleTask cfg_cfg_time_schedule_task = 98;
-
-  optional TimeTaskV2Item time_task_v2_current = 100;
-
-  optional float cms_batt_soc = 88;
-
-  optional BpDisplayList bp_display_list = 104;
-
-  optional AcpList acp_list = 18;
+  optional bool long_runtime = 54;
 
   optional PvList pv_list = 22;
 
@@ -1241,19 +997,13 @@ message DisplayPropertyUpload {
 
   optional UsbList usb_list = 28;
 
-  optional TypecList typec_list = 30;
+  optional OutputPowerFactorList output_power_factor_list = 70;
 
   optional DisplayAcOutList display_ac_out_list = 84;
 
-  optional float output_ability = 6;
+  optional DisplayDc12vList display_dc12v_list = 94;
 
-  optional sint32 utc_timezone = 35;
-
-  optional string utc_timezone_id = 36;
-
-  optional bool utc_set_mode = 37;
-
-  optional TimezoneChangeList timezone_change_list = 38;
+  optional TypecList typec_list = 30;
 
   optional uint32 lcd_light = 40;
 
@@ -1263,90 +1013,34 @@ message DisplayPropertyUpload {
 
   optional uint32 ac_standby_time = 43;
 
-  optional bool en_beep = 44;
-
-  optional bool ups_alram = 46;
-
-  optional uint32 low_power_alarm = 48;
-
-  optional uint32 long_runtime_scene = 54;
+  optional uint32 long_runtime_scene = 44;
 
   optional uint32 ac_out_freq = 63;
 
-  optional float output_vol_specifications = 90;
-
-  optional bool backup_power_switch = 91;
+  optional LongRuntimeInfo long_runtime_info = 108;
 
   optional uint32 std_proto_version = 3;
 
   optional uint32 llc_hv_lv_flag = 5;
 
-  optional uint32 ac_in_chg_hal_pow_max = 7;
-
   optional ModuleErrorList module_error_list = 34;
-
-  optional uint32 update_ban_flag = 49;
-
-  optional DisplayBmsInfo display_bms_info = 57;
 
   optional DisplayCmsInfo display_cms_info = 58;
 
-  optional bool ac_in_state = 61;
-
-  optional uint32 power_limit_flag = 69;
-
-  optional bool bms_health_open = 71;
-
-  optional float module_wifi_rssi = 72;
-
-  optional uint32 cms_soc_cali_state = 77;
-
-  optional bool energy_backup_en = 79;
-
-  optional uint32 self_powered_conflict_flag = 86;
-
-  optional uint32 energy_backup_state = 93;
-
-  optional uint32 dev_sleep_state = 95;
-
-  optional bool time_task_mode_en = 102;
-
-  optional bool self_use_mode_en = 103;
-
   optional uint32 flow_info_ac_out_open = 66;
-
-  optional uint32 bms_soc_equal_flag = 101;
 
   optional uint32 cms_max_chg_soc = 51;
 
   optional uint32 cms_min_dsg_soc = 52;
-
-  optional uint32 multi_bp_chg_dsg_mode = 56;
 
   optional bool xboost_en = 59;
 
   optional FanList fan_list = 62;
 
   optional bool output_power_off_memory = 64;
-
-  optional uint32 backup_reverse_soc = 65;
-
-  optional bool operate_tou_mode_open = 67;
-
-  optional bool bypass_out_disable = 68;
-
-  optional uint32 time_task_change_cnt = 74;
-
-  optional uint32 energy_backup_conflict_flag = 76;
-
-  optional StormPattern storm_pattern = 89;
-
-  optional bool rcd_en = 108;
 }
 
 message RuntimePropertyUpload {
-  optional PropertyUploadPeriod property_upload_period = 80;
-
   optional SktOcpArray skt_ocp_array = 81;
 
   optional RuntimeCmsInfo runtime_cms_info = 58;
@@ -1361,45 +1055,11 @@ message RuntimePropertyUpload {
 message PropertyCmd {
   uint32 action_id = 1;
 
-  optional float pow_get_ac_lv_tt30_out = 39;
+  optional bool ultra_emergency = 53;
 
-  optional cms_oil_self_start cms_oil_self_start = 45;
-
-  optional pv_dc_chg_setting_list_2 pv_dc_chg_setting_list_2 = 47;
-
-  optional uint32 feed_grid_mode = 53;
-
-  optional uint32 ups_vol_max = 55;
-
-  optional uint32 ups_vol_min = 70;
-
-  optional GRID_STD_CODE grid_std_code = 73;
-
-  optional bool long_runtime = 75;
-
-  optional bool ultra_emergency = 78;
-
-  optional POWER_MODE power_mode = 94;
-
-  optional CfgIntelligentScheduleMode cfg_intelligent_schedule_mode = 96;
-
-  optional CfgTimeScheduleTask cfg_cfg_time_schedule_task = 98;
-
-  optional PropertyUploadPeriod property_upload_period = 80;
-
-  optional AcpList acp_list = 18;
-
-  optional float output_ability = 6;
+  optional bool long_runtime = 54;
 
   optional AC_IN_CHG_MOD ac_in_chg_mode = 29;
-
-  optional sint32 utc_timezone = 35;
-
-  optional string utc_timezone_id = 36;
-
-  optional bool utc_set_mode = 37;
-
-  optional TimezoneChangeList timezone_change_list = 38;
 
   optional uint32 lcd_light = 40;
 
@@ -1409,33 +1069,17 @@ message PropertyCmd {
 
   optional uint32 ac_standby_time = 43;
 
-  optional bool en_beep = 44;
-
-  optional bool ups_alram = 46;
-
-  optional uint32 low_power_alarm = 48;
-
-  optional uint32 long_runtime_scene = 54;
+  optional uint32 long_runtime_scene = 44;
 
   optional uint32 ac_out_freq = 63;
 
-  optional float output_vol_specifications = 90;
-
-  optional bool backup_power_switch = 91;
-
   optional uint32 ac_in_chg_pow_max = 97;
-
-  optional uint32 acp_chg_pow_max = 99;
 
   optional uint32 cms_max_chg_soc = 51;
 
   optional uint32 cms_min_dsg_soc = 52;
 
-  optional uint32 multi_bp_chg_dsg_mode = 56;
-
   optional bool xboost_en = 59;
-
-  optional bool rcd_en = 108;
 }
 
 message PropertyCmdAck {
@@ -1443,45 +1087,11 @@ message PropertyCmdAck {
 
   bool cmd_ok = 2;
 
-  optional float pow_get_ac_lv_tt30_out = 39;
+  optional bool ultra_emergency = 53;
 
-  optional cms_oil_self_start cms_oil_self_start = 45;
-
-  optional pv_dc_chg_setting_list_2 pv_dc_chg_setting_list_2 = 47;
-
-  optional uint32 feed_grid_mode = 53;
-
-  optional uint32 ups_vol_max = 55;
-
-  optional uint32 ups_vol_min = 70;
-
-  optional GRID_STD_CODE grid_std_code = 73;
-
-  optional bool long_runtime = 75;
-
-  optional bool ultra_emergency = 78;
-
-  optional POWER_MODE power_mode = 94;
-
-  optional CfgIntelligentScheduleMode cfg_intelligent_schedule_mode = 96;
-
-  optional CfgTimeScheduleTask cfg_cfg_time_schedule_task = 98;
-
-  optional PropertyUploadPeriod property_upload_period = 80;
-
-  optional AcpList acp_list = 18;
-
-  optional float output_ability = 6;
+  optional bool long_runtime = 54;
 
   optional AC_IN_CHG_MOD ac_in_chg_mode = 29;
-
-  optional sint32 utc_timezone = 35;
-
-  optional string utc_timezone_id = 36;
-
-  optional bool utc_set_mode = 37;
-
-  optional TimezoneChangeList timezone_change_list = 38;
 
   optional uint32 lcd_light = 40;
 
@@ -1491,79 +1101,33 @@ message PropertyCmdAck {
 
   optional uint32 ac_standby_time = 43;
 
-  optional bool en_beep = 44;
-
-  optional bool ups_alram = 46;
-
-  optional uint32 low_power_alarm = 48;
-
-  optional uint32 long_runtime_scene = 54;
+  optional uint32 long_runtime_scene = 44;
 
   optional uint32 ac_out_freq = 63;
 
-  optional float output_vol_specifications = 90;
-
-  optional bool backup_power_switch = 91;
-
   optional uint32 ac_in_chg_pow_max = 97;
-
-  optional uint32 acp_chg_pow_max = 99;
 
   optional uint32 cms_max_chg_soc = 51;
 
   optional uint32 cms_min_dsg_soc = 52;
 
-  optional uint32 multi_bp_chg_dsg_mode = 56;
-
   optional bool xboost_en = 59;
-
-  optional bool rcd_en = 108;
 }
 
 message ActionCmd {
   uint32 action_id = 1;
 
-  optional CfgIntelligentColdBootMode cfg_interlligent_cold_boot_mode = 5;
-
-  optional TimeTaskV2Item cfg_time_task_v2 = 7;
-
   optional POWER_STATE power_state = 8;
-
-  optional bool active_display_property_full_upload = 9;
-
-  optional bool active_runtime_property_full_upload = 10;
-
-  optional uint32 backup_reverse_soc = 11;
-
-  optional bool self_use_mode_en = 12;
-
-  optional bool operate_tou_mode_en = 13;
-
-  optional bool time_task_mode_en = 14;
-
-  optional bool bypass_out_disable = 15;
-
-  optional PropertyUploadService upload_service = 16;
 
   optional uint32 reset_factory_setting = 17;
 
   optional uint32 utc_time = 18;
 
-  optional StormPattern storm_pattern = 19;
-
   optional bool output_power_off_memory = 20;
-
-  optional bool unlock_pv_weak = 21;
 
   optional uint32 cfg_ac_out_open = 22;
 
-  optional uint32 cali_soc = 23;
-
-  optional CfgBmsPush cfg_bms_push = 24;
-
   optional bool get_device_other_property = 25;
-
-  optional SafetyParam safety_param = 27;
 }
 
 message ActionCmdAck {
@@ -1571,13 +1135,7 @@ message ActionCmdAck {
 
   bool cmd_ok = 2;
 
-  optional uint32 result = 6;
-
   optional uint32 reset_factory_setting = 17;
-
-  optional uint32 cali_soc_ack = 24;
-
-  optional CfgBmsPushAck cfg_bms_push_ack = 25;
 
   optional DeviceOtherProperty other_property = 26;
 
@@ -1626,12 +1184,6 @@ message DevRequest {
   sint32 dev_utc_timezone = 4;
 
   optional string cfg_utc_timezone_id = 5;
-
-  optional bool require_time_service_action = 7;
-
-  optional bool property_upload_period_action = 8;
-
-  optional ReqIntelligentSchedule require_intelligent_schedule = 12;
 }
 
 message DevRequestAck {
@@ -1640,8 +1192,6 @@ message DevRequestAck {
   uint32 require_ok = 2;
 
   bool need_forward = 3;
-
-  optional PropertyUploadPeriod property_upload_period = 5;
 }
 
 message Properties {
@@ -1726,16 +1276,6 @@ enum TIME_TASK_DETAIL_TYPE {
   TIME_TASK_DETAIL_SOC = 4;
 }
 
-enum ACP_CHG_MODE {
-  ACP_CHG_MODE_DEFAULT = 0;
-
-  ACP_CHG_MODE_REDUNDANCY_PV = 1;
-
-  ACP_CHG_MODE_ENERGY_SAVE = 2;
-
-  ACP_CHG_MODE_PLUG_PLAY = 3;
-}
-
 enum AC_IN_CHG_MOD {
   AC_IN_CHG_MOD_SELF_DEF_POW = 0;
 
@@ -1780,34 +1320,12 @@ enum TIME_TASK_MODE {
   TIME_TASK_MODE_ONCE = 2;
 }
 
-enum pv_chg_vol_spec {
-  PV_CHG_VOL_SPEC_RESV = 0;
-
-  PV_CHG_VOL_SPEC_12V = 1;
-
-  PV_CHG_VOL_SPEC_24V = 2;
-
-  PV_CHG_VOL_SPEC_48V = 3;
-}
-
-enum GRID_STD_CODE {
-  GRID_STD0 = 0;
-}
-
 enum POWER_STATE {
   POWER_STATE_RESV = 0;
 
   POWER_STATE_ON = 1;
 
   POWER_STATE_OFF = 2;
-}
-
-enum POWER_MODE {
-  NORMAL = 0;
-
-  LONG_RUNTIME = 1;
-
-  ULTRA_EMERGENCY = 2;
 }
 
 enum AppDateType {

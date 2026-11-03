@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package app.src.main.java;
+package ecoflow.ft308module.proto.Ft308Cmd;
 
 enum HeatingRodCmdSet {
   NONE_CMD_SETS = 0;
