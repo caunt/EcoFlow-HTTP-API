@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.common.proto.Wn511Sys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/common/proto/Wn511Sys;wn511sys";
+
 message event_burial_point {
   uint32 type = 1;
 

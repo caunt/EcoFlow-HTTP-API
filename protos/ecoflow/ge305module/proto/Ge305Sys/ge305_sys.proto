@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.ge305module.proto.Ge305Sys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/ge305module/proto/Ge305Sys;ge305sys";
+
 message EventPush {
   uint32 event_ver = 1;
 

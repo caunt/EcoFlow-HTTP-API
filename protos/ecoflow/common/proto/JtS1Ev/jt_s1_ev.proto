@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.common.proto.JtS1Ev;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/common/proto/JtS1Ev;jts1ev";
+
 message EVChargingListGet {
 }
 

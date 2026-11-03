@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.Pd335Sys;
 
-option java_package = "com.ecoflow.energyStorageModule.proto";
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/energyStorageModule/proto/Pd335Sys;pd335sys";
 
 message EventPush {
   uint32 event_ver = 1;

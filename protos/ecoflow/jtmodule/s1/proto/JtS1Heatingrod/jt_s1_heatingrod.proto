@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.jtmodule.s1.proto.JtS1Heatingrod;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/jtmodule/s1/proto/JtS1Heatingrod;jts1heatingrod";
+
 message HeatingRodParamSet {
   string hr_sn = 1;
 

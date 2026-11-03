@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.bkseriesmodule.proto.BkDiagnosis;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/bkseriesmodule/proto/BkDiagnosis;bkdiagnosis";
+
 message UserInfo {
   string user_id = 1;
 }

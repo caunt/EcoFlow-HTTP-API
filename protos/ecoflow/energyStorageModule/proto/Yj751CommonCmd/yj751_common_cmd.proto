@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.Yj751CommonCmd;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/energyStorageModule/proto/Yj751CommonCmd;yj751commoncmd";
+
 enum CmdSets {
   STAND_PROTOCOL_CMD_SET_NONE = 0;
 

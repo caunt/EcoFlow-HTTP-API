@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.R4DevAplComm;
 
-option java_package = "com.ecoflow.energyStorageModule.proto";
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/energyStorageModule/proto/R4DevAplComm;r4devaplcomm";
 
 message ModuleErrorItem {
   uint32 row_no = 1;

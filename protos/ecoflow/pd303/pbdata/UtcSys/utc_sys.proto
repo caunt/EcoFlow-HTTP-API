@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.pd303.pbdata.UtcSys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/pd303/pbdata/UtcSys;utcsys";
+
 message APPParaHeartbeatReport {
   optional sint32 sys_timezone = 20;
 

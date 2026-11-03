@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ecoflow.common.proto.NetDiagnosis;
 
-option java_package = "com.ecoflow.common.proto";
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/common/proto/NetDiagnosis;netdiagnosis";
 
 message UserInfo {
   string user_id = 1;

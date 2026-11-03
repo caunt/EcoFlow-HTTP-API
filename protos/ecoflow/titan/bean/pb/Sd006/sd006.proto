@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.titan.bean.pb.Sd006;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/titan/bean/pb/Sd006;sd006";
+
 message PanelGenerateEnergy {
   optional uint32 run_sta = 1;
 

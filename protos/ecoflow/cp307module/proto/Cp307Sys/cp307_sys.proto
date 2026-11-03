@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.cp307module.proto.Cp307Sys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/cp307module/proto/Cp307Sys;cp307sys";
+
 message EnergyFlowHistory {
   uint32 time_stamp = 1;
 

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.common.proto.BmsCloud;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/common/proto/BmsCloud;bmscloud";
+
 message BpCloudHeartbeatReport {
   uint32 bp_package_index = 1;
 

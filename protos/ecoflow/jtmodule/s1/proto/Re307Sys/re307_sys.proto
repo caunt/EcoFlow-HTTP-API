@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.jtmodule.s1.proto.Re307Sys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/jtmodule/s1/proto/Re307Sys;re307sys";
+
 message SgReadyStatParam {
   bool ems_sg_stat_en = 1;
 

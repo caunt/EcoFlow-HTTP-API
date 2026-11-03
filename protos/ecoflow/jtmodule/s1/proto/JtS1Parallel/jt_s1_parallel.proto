@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.jtmodule.s1.proto.JtS1Parallel;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/jtmodule/s1/proto/JtS1Parallel;jts1parallel";
+
 message DevInfo {
   uint32 dev_addr = 1;
 

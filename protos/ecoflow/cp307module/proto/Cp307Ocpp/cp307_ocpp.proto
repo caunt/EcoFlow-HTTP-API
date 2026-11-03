@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.cp307module.proto.Cp307Ocpp;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/cp307module/proto/Cp307Ocpp;cp307ocpp";
+
 message meterValue {
   uint32 time_stamp = 1;
 

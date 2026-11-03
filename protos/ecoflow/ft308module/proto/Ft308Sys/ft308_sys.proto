@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.ft308module.proto.Ft308Sys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/ft308module/proto/Ft308Sys;ft308sys";
+
 message ErrorCodeHeartBeat {
   repeated uint32 error_code = 1;
 }

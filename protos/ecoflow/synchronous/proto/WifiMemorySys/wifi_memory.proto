@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.synchronous.proto.WifiMemorySys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/synchronous/proto/WifiMemorySys;wifimemorysys";
+
 message ApFollowInfoListGet {
 }
 

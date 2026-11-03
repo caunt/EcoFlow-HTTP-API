@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.pd303.pbdata.PD303CommonCmd;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/pd303/pbdata/PD303CommonCmd;pd303commoncmd";
+
 enum CmdSets {
   STAND_PROTOCOL_CMD_SET_NONE = 0;
 

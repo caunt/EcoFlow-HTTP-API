@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.cbb.databus.proto.AppCommon;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/cbb/databus/proto/AppCommon;appcommon";
+
 message AppBizDataRequest {
   uint64 id = 1;
 

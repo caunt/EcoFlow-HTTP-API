@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.wn100module.pb.Wn511SocketSys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/wn100module/pb/Wn511SocketSys;wn511socketsys";
+
 message plug_ack_message {
   uint32 ack = 1;
 }

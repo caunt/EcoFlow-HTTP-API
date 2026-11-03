@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.jtmodule.s1.proto.JtS1Heatpump;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/jtmodule/s1/proto/JtS1Heatpump;jts1heatpump";
+
 message HPRTUPoint {
   uint32 address = 1;
 

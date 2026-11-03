@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.cp307module.proto.Cp30714A;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/cp307module/proto/Cp30714A;cp30714a";
+
 message Sys14ADevBean {
   string ski = 1;
 

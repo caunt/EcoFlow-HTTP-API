@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.common.proto.BleCrtInfo;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/common/proto/BleCrtInfo;blecrtinfo";
+
 message CrtVersionGet {
   string sys_ca_version = 1;
 

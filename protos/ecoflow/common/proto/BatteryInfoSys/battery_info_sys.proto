@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.common.proto.BatteryInfoSys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/common/proto/BatteryInfoSys;batteryinfosys";
+
 message AppRequestBpEuLawData {
   string bp_sn = 1;
 

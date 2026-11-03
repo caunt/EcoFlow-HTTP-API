@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.Pd335BmsBp;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/energyStorageModule/proto/Pd335BmsBp;pd335bmsbp";
+
 message BMSHeartBeatReport {
   optional uint32 num = 1;
 

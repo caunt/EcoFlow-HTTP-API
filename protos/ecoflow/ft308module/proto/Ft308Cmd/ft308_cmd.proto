@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.ft308module.proto.Ft308Cmd;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/ft308module/proto/Ft308Cmd;ft308cmd";
+
 enum HeatingRodCmdSet {
   NONE_CMD_SETS = 0;
 

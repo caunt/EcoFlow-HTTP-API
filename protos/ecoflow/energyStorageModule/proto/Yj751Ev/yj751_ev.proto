@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.Yj751Ev;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/energyStorageModule/proto/Yj751Ev;yj751ev";
+
 message InstallmentPaymentServeBelone {
   SERVE_MIDDLEMEN serve_middlemen = 1;
 

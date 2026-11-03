@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.wn100module.pb.WnUtcCmd;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/wn100module/pb/WnUtcCmd;wnutccmd";
+
 enum CmdSets {
   NONE_CMD_SET = 0;
 

@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package ecoflow.cbb.databus.proto.IotComm;
 
-option java_outer_classname = "IotComm";
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/cbb/databus/proto/IotComm;iotcomm";
 
-option java_package = "com.ecoflow.cbb.databus.proto";
+option java_outer_classname = "IotComm";
 
 message ModuleInfo {
   uint32 product_type = 1;

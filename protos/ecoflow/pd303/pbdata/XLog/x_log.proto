@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.pd303.pbdata.XLog;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/pd303/pbdata/XLog;xlog";
+
 message pb_log_item_t {
   uint32 unix_time = 1;
 

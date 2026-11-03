@@ -19,22 +19,29 @@ var outputFilePathOption = new Option<FileInfo>("--output", "-o")
     DefaultValueFactory = result => new FileInfo("file_descriptor_set.pb")
 };
 
+var goPackagePrefixOption = new Option<string?>("--go-package-prefix")
+{
+    Description = "The Go import path prefix for go_package options (e.g. github.com/owner/repo/protos)"
+};
+
 var rootCommand = new RootCommand("Extracts proto descriptor set from XAPK file")
 {
     inputFilePathOption,
-    outputFilePathOption
+    outputFilePathOption,
+    goPackagePrefixOption
 };
 
 rootCommand.SetAction(async (result, cancellationToken) =>
 {
     var inputFileInfo = result.GetRequiredValue(inputFilePathOption);
     var outputFileInfo = result.GetRequiredValue(outputFilePathOption);
+    var goPackagePrefix = result.GetValue(goPackagePrefixOption);
 
     var set = await ProtosReader.GetProtoSetAsync(inputFileInfo.FullName, update =>
     {
         Console.WriteLine($"Extracted {update.FileDescriptorProto.Name}");
         return update;
-    }, cancellationToken);
+    }, goPackagePrefix, cancellationToken);
 
     await File.WriteAllBytesAsync(outputFileInfo.FullName, set.ToByteArray(), cancellationToken);
     await File.WriteAllTextAsync("meta.json", JsonSerializer.Serialize(JsonDocument.Parse(JsonFormatter.ToDiagnosticString(set)).RootElement, new JsonSerializerOptions { WriteIndented = true }), cancellationToken);

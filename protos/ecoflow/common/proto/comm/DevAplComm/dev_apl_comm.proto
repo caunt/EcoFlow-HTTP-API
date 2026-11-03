@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.common.proto.comm.DevAplComm;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/common/proto/comm/DevAplComm;devaplcomm";
+
 message EventPush {
   uint32 event_ver = 1;
 

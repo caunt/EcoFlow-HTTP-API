@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.BkSeries;
 
-option java_package = "com.ecoflow.common.proto";
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/energyStorageModule/proto/BkSeries;bkseries";
 
 message EventPush {
   uint32 event_ver = 1;

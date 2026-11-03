@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.StandardProtocolMr521;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/energyStorageModule/proto/StandardProtocolMr521;standardprotocolmr521";
+
 message EventPush {
   uint32 event_ver = 1;
 

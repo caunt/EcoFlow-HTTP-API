@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ecoflow.energyStorageModule.proto.BkDiagnosis;
 
-option java_package = "com.ecoflow.common.proto";
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/energyStorageModule/proto/BkDiagnosis;bkdiagnosis";
 
 message UserInfo {
   string user_id = 1;

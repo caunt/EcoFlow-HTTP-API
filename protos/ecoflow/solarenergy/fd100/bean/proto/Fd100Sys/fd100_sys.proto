@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.solarenergy.fd100.bean.proto.Fd100Sys;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/solarenergy/fd100/bean/proto/Fd100Sys;fd100sys";
+
 message EfFd100ReportPack {
   optional uint32 scenes = 1;
 

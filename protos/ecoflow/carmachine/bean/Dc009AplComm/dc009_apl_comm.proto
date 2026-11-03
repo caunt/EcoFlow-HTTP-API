@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.carmachine.bean.Dc009AplComm;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/carmachine/bean/Dc009AplComm;dc009aplcomm";
+
 message EventPush {
   uint32 event_ver = 1;
 

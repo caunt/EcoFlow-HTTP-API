@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.jtmodule.proto.JtS1Edev;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/jtmodule/proto/JtS1Edev;jts1edev";
+
 message EdevBaseInfo {
   uint32 dev_addr = 1;
 

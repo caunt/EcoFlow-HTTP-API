@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.pd303.pbdata.PD303Common;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/pd303/pbdata/PD303Common;pd303common";
+
 message InstallmentPaymentServeBelone {
   SERVE_MIDDLEMEN serve_middlemen = 1;
 

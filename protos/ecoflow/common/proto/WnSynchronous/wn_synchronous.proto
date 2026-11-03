@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.common.proto.WnSynchronous;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/common/proto/WnSynchronous;wnsynchronous";
+
 message ap_message {
   string router_ssid = 1;
 

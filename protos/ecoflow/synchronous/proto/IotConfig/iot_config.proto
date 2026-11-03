@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.synchronous.proto.IotConfig;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/synchronous/proto/IotConfig;iotconfig";
+
 message CommonAck {
   uint32 result = 1;
 }

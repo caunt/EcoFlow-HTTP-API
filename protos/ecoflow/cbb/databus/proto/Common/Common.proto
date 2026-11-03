@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.cbb.databus.proto.Common;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/cbb/databus/proto/Common;common";
+
 message Header {
   bytes pdata = 1;
 

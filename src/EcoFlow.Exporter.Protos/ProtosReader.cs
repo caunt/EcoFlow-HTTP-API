@@ -33,19 +33,19 @@ public static class ProtosReader
         }
     }
 
-    public static async Task<FileDescriptorSet> GetProtoSetAsync(string apkFileName, CancellationToken cancellationToken = default)
+    public static async Task<FileDescriptorSet> GetProtoSetAsync(string apkFileName, string? goPackagePrefix = null, CancellationToken cancellationToken = default)
     {
-        return await GetProtoSetAsync(apkFileName, update => update, cancellationToken);
+        return await GetProtoSetAsync(apkFileName, update => update, goPackagePrefix, cancellationToken);
     }
 
-    public static async Task<FileDescriptorSet> GetProtoSetAsync(string apkFileName, Func<Item, Item?> update, CancellationToken cancellationToken = default)
+    public static async Task<FileDescriptorSet> GetProtoSetAsync(string apkFileName, Func<Item, Item?> update, string? goPackagePrefix = null, CancellationToken cancellationToken = default)
     {
         var protos = new List<Item>();
 
         await foreach (var item in EnumerateParallelAsync(apkFileName, cancellationToken).Select(update).WhereNotNull())
             protos.Add(item);
 
-        Repair(protos);
+        Repair(protos, goPackagePrefix);
 
         var set = new FileDescriptorSet();
 
@@ -239,10 +239,11 @@ public static class ProtosReader
         return fileDescriptorProto;
     }
 
-    private static void Repair(IEnumerable<Item> items)
+    private static void Repair(IEnumerable<Item> items, string? goPackagePrefix)
     {
         Apply(items, RepairName);
         Apply(items, RepairPackage);
+        Apply(items, RepairOptions);
         Apply(items, RepairDependencies);
         Apply(items, RepairTypeNames);
         Apply(items, RepairFieldNames);
@@ -291,6 +292,28 @@ public static class ProtosReader
 
             // Done!
             item.FileDescriptorProto.Package = package.Replace('/', '.');
+        }
+
+        void RepairOptions(Item item)
+        {
+            var fileDescriptorProto = item.FileDescriptorProto;
+            var options = fileDescriptorProto.Options ??= new Google.Protobuf.Reflection.FileOptions();
+
+            // If go_package is present, the file is properly authored (e.g. google/protobuf) and its options are correct
+            if (options.HasGoPackage)
+                return;
+
+            // Java package is shared by unrelated files, which breaks Kotlin, so fall back to the unique proto package
+            options.ClearJavaPackage();
+
+            if (goPackagePrefix is null)
+                return;
+
+            // Go cannot derive import path from the proto package, so build it from the file location
+            var directory = Path.GetDirectoryName(fileDescriptorProto.Name)?.Replace('\\', '/') ?? throw new Exception($"Unexpected proto name format: '{fileDescriptorProto.Name}'");
+            var goPackageName = Path.GetFileName(directory).ToLowerInvariant();
+
+            options.GoPackage = $"{goPackagePrefix.TrimEnd('/')}/{directory};{goPackageName}";
         }
 
         void RepairDependencies(Item item)

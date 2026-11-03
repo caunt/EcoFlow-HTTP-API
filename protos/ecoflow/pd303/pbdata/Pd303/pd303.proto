@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ecoflow.pd303.pbdata.Pd303;
 
-option java_package = "com.ecoflow.pd303.pbdata";
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/pd303/pbdata/Pd303;pd303";
 
 message RtcHalData {
   uint32 week = 1;

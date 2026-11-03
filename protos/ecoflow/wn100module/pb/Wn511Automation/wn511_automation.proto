@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.wn100module.pb.Wn511Automation;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/wn100module/pb/Wn511Automation;wn511automation";
+
 message timetask_ack_message {
   uint32 ack = 1;
 }

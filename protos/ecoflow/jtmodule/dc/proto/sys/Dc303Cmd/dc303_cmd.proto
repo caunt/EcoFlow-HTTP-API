@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.jtmodule.dc.proto.sys.Dc303Cmd;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/jtmodule/dc/proto/sys/Dc303Cmd;dc303cmd";
+
 enum CmdSets {
   NONE_CMD_SETS = 0;
 

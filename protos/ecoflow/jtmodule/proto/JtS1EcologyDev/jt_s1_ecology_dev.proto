@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package ecoflow.jtmodule.proto.JtS1EcologyDev;
 
+option go_package = "github.com/caunt/EcoFlow-HTTP-API/protos/ecoflow/jtmodule/proto/JtS1EcologyDev;jts1ecologydev";
+
 message EcologyDevGet {
   uint32 addr = 1;
 }
