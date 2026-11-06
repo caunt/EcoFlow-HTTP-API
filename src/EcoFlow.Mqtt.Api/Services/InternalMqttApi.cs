@@ -28,7 +28,8 @@ public class InternalMqttApi(IOptions<EcoFlowConfiguration> options) : IHostedSe
             {
                 return new OrderedDictionary<string, JsonNode>(_states.Values
                     .SelectMany(state => state.DeviceNodes)
-                    .ToDictionary(state => state.Key.SerialNumber, state => state.Value)
+                    // Snapshot under the lock: nodes are merged concurrently by MQTT handlers, serializing live nodes races with that.
+                    .ToDictionary(state => state.Key.SerialNumber, state => state.Value.DeepClone())
                     .OrderBy(state => state.Key));
             }
         }

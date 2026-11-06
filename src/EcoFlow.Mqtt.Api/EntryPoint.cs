@@ -79,8 +79,8 @@ app.MapGet("/", (HttpRequest httpRequest) =>
 app.MapGet("/{serialNumber}", (HttpRequest httpRequest, string serialNumber) =>
     mqttApi.Devices.TryGetValue(serialNumber, out var device)
     ? httpRequest.Query.ContainsKey("flat")
-        ? Results.Text(string.Join('\n', mqttApi.Devices[serialNumber].Flatten()))
-        : Results.Json(mqttApi.Devices[serialNumber], ApplicationJsonContext.Default.JsonNode)
+        ? Results.Text(string.Join('\n', device.Flatten()))
+        : Results.Json(device, ApplicationJsonContext.Default.JsonNode)
     : httpRequest.Query.ContainsKey("flat")
         ? Results.Text(string.Join(',', mqttApi.Devices.Keys), statusCode: StatusCodes.Status404NotFound)
         : Results.Text($"Device not found. Existing serial numbers: {string.Join(',', mqttApi.Devices.Keys)}", statusCode: StatusCodes.Status404NotFound));
