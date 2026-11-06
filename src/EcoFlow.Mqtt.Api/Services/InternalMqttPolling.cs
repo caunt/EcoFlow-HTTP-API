@@ -76,6 +76,16 @@ public class InternalMqttPolling(IOptions<EcoFlowConfiguration> options, Interna
             
             var payload = $$"""{"params":{},"operateType":"getAllTaskCfg","from":"Android","lang":"en-us","id":"{{CreateId()}}","moduleSn":"{{device.SerialNumber}}","moduleType":1,"version":"1.0"}""";
             await mqttApi.SendMessageAsync(device, topic, payload, cancellationToken);
+
+            // Devices only stream /app/device/property/{sn} for ~120s after the official app wakes them.
+            // Request a full snapshot the same way the app does; the reply arrives on .../thing/property/get_reply.
+            if (device.Session is AppSession quotasSession)
+            {
+                var quotasTopic = $"/app/{quotasSession.User.Id}/{device.SerialNumber}/thing/property/get";
+                var quotasPayload = $$"""{"from":"Android","operateType":"latestQuotas","id":"{{CreateId()}}","lang":"en-us","params":{},"version":"1.0"}""";
+                await mqttApi.SendMessageAsync(device, quotasTopic, quotasPayload, cancellationToken);
+            }
+
             Console.WriteLine($"📡 Sent polling message to {device}");
         }
     }

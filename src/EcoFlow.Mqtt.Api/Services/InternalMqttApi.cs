@@ -138,6 +138,17 @@ public class InternalMqttApi(IOptions<EcoFlowConfiguration> options) : IHostedSe
                 return;
             }
 
+            // /app/{userId}/{deviceSerialNumber}/thing/property/get_reply (reply to latestQuotas polling)
+            if (parts is [_, "app", _, var replySerialNumber, "thing", "property", "get_reply"])
+            {
+                if (TryParseLatestQuotas(eventArgs.ApplicationMessage.Payload, out var quotaMap))
+                    UpdateDevice(replySerialNumber, [quotaMap], topic);
+                else if (options.Value.VerboseLogging)
+                    Console.WriteLine($"⚠️ Unknown topic received: {topic} => {(TryParse(eventArgs.ApplicationMessage.Payload, out var replyPayload) ? replyPayload : Convert.ToHexString(eventArgs.ApplicationMessage.Payload.ToArray()))}");
+
+                return;
+            }
+
             // /app/device/property/{deviceSerialNumber}
             // /open/{mqttConfiguration.Username}/{deviceSerialNumber}/quota
 
@@ -194,29 +205,7 @@ public class InternalMqttApi(IOptions<EcoFlowConfiguration> options) : IHostedSe
                 }
             }
 
-            if (nodes.Count is 0)
-                return;
-
-            var updated = false;
-
-            foreach (var state in _states.Values)
-            {
-                if (!state.DeviceNodes.TryGetValue(deviceInfo, out var deviceNode))
-                    continue;
-
-                lock (_states)
-                {
-                    foreach (var node in nodes)
-                    {
-                        deviceNode.MergeWith(node);
-
-                        deviceNode["____updatedAtUtcSeconds"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                        updated = true;
-                    }
-                }
-            }
-
-            Console.WriteLine(updated ? $"🖥  Updated state for {deviceInfo}" : $"⚠️ No devices found for update: {topic} at {DateTime.Now:hh:mm:ss} => {string.Join("\n", nodes)}");
+            UpdateDevice(serialNumber, nodes, topic);
         }
         catch (Exception exception)
         {
@@ -241,6 +230,56 @@ public class InternalMqttApi(IOptions<EcoFlowConfiguration> options) : IHostedSe
                 return false;
             }
         }
+
+        // {"operateType":"latestQuotas","code":"0","data":{"online":1,"quotaMap":{...}}}
+        static bool TryParseLatestQuotas(ReadOnlySequence<byte> bytes, [MaybeNullWhen(false)] out JsonNode quotaMap)
+        {
+            quotaMap = null;
+
+            if (!TryParse(bytes, out var text) || JsonNode.Parse(text) is not JsonObject reply)
+                return false;
+
+            if (reply["operateType"]?.ToString() != "latestQuotas" || reply["code"]?.ToString() != "0")
+                return false;
+
+            // The cloud may answer with the last known quotas of an offline device; don't treat that as fresh data.
+            if (reply["data"] is not JsonObject data || data["online"]?.ToString() == "0")
+                return false;
+
+            if (data["quotaMap"] is not JsonObject map)
+                return false;
+
+            quotaMap = map.DeepClone();
+            return true;
+        }
+    }
+
+    private void UpdateDevice(string serialNumber, IReadOnlyCollection<JsonNode> nodes, string topic)
+    {
+        if (nodes.Count is 0)
+            return;
+
+        var deviceInfo = _states.Values.Select(state => state.DeviceNodes.Keys.Single(device => device.SerialNumber == serialNumber)).Single();
+        var updated = false;
+
+        foreach (var state in _states.Values)
+        {
+            if (!state.DeviceNodes.TryGetValue(deviceInfo, out var deviceNode))
+                continue;
+
+            lock (_states)
+            {
+                foreach (var node in nodes)
+                {
+                    deviceNode.MergeWith(node);
+
+                    deviceNode["____updatedAtUtcSeconds"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    updated = true;
+                }
+            }
+        }
+
+        Console.WriteLine(updated ? $"🖥  Updated state for {deviceInfo}" : $"⚠️ No devices found for update: {topic} at {DateTime.Now:hh:mm:ss} => {string.Join("\n", nodes)}");
     }
 
     private record MqttState(IMqttClient Client, ConcurrentDictionary<DeviceInfo, JsonNode> DeviceNodes);
