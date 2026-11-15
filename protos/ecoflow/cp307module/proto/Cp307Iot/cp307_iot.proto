@@ -161,6 +161,8 @@ message ParamReport {
 
   optional uint32 bp_discharge_limit_en = 22;
 
+  optional uint32 installer_output_current_limit = 23;
+
   optional uint32 start_charging_delay = 30;
 
   optional uint32 suspend_charging_delay = 31;
@@ -359,6 +361,8 @@ message ParamGet {
 
   bool has_bp_discharge_limit_en = 22;
 
+  bool has_installer_output_current_limit = 23;
+
   bool has_start_charging_delay = 30;
 
   bool has_suspend_charging_delay = 31;
@@ -423,6 +427,8 @@ message ParamGetAck {
 
   optional uint32 bp_discharge_limit_en = 22;
 
+  optional uint32 installer_output_current_limit = 23;
+
   optional uint32 start_charging_delay = 30;
 
   optional uint32 suspend_charging_delay = 31;
@@ -486,6 +492,8 @@ message ParamSet {
   optional uint32 ocpp_enable = 21;
 
   optional uint32 bp_discharge_limit_en = 22;
+
+  optional uint32 installer_output_current_limit = 23;
 
   optional uint32 start_charging_delay = 30;
 

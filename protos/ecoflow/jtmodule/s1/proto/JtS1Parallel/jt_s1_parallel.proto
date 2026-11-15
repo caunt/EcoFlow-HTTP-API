@@ -23,6 +23,12 @@ message ParallelEnergyStream {
 
   string dev_sn = 6;
 
+  float pv1_pwr = 9;
+
+  float pv2_pwr = 10;
+
+  float pv_inv_pwr = 11;
+
   float spain_4g_pv_pwr = 12;
 }
 
@@ -44,6 +50,8 @@ message ParallelEnergyStreamItem {
   uint32 bp_soc = 7;
 
   string dev_sn = 8;
+
+  float spain_4g_pv_pwr = 14;
 }
 
 message ParallelEnergyStreamDetail {

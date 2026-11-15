@@ -227,6 +227,8 @@ message EDevPileParamSet {
 
   optional EDevOCPPParmSet ocpp_paramset = 8;
 
+  optional uint32 installer_current_ouput_max = 9;
+
   optional bytes ext_param = 21;
 }
 
@@ -343,9 +345,11 @@ message PileRemoteParamSet {
 
   optional uint32 user_current_set = 8;
 
-  optional bytes ext_param = 21;
-
   optional EDevOCPPParmSet ocpp_paramset = 9;
+
+  optional uint32 installer_current_ouput_max = 10;
+
+  optional bytes ext_param = 21;
 
   optional SmartModeParameter smart_info = 31;
 }
