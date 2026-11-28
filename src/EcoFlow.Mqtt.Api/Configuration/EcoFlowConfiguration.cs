@@ -5,10 +5,19 @@ using System.Globalization;
 
 namespace EcoFlow.Mqtt.Api.Configuration;
 
-internal sealed record EcoFlowConfiguration(Uri AppApiUri, Uri OpenApiUri, ImmutableArray<IAuthentication> Authentications, bool VerboseLogging, TimeSpan PollingInterval)
+internal sealed record EcoFlowConfiguration(Uri AppApiUri,
+    Uri OpenApiUri,
+    ImmutableArray<IAuthentication> Authentications,
+    bool VerboseLogging,
+    TimeSpan PollingInterval,
+    TimeSpan HistoryMaximumAge,
+    long HistoryMaximumBytes)
 {
     public const string AuthenticationHint = "Set [ECOFLOW_USERNAME and ECOFLOW_PASSWORD] or [ECOFLOW_ACCESS_KEY and ECOFLOW_SECRET_KEY] environment variables.";
 
+    private const int BytesPerMegabyte = 1024 * 1024;
+    private const int DefaultHistoryMaximumDays = 30;
+    private const int DefaultHistoryMaximumMegabytes = 100;
     private const int DefaultPollingIntervalSeconds = 15;
 
     public static EcoFlowConfiguration FromEnvironment()
@@ -23,7 +32,11 @@ internal sealed record EcoFlowConfiguration(Uri AppApiUri, Uri OpenApiUri, Immut
             new Uri(Read(name: "OPEN_API_URI") ?? "https://api-e.ecoflow.com"),
             ReadAuthentications(),
             isVerbose,
-            TimeSpan.FromSeconds(hasPollingInterval ? pollingIntervalSeconds : DefaultPollingIntervalSeconds));
+            TimeSpan.FromSeconds(hasPollingInterval ? pollingIntervalSeconds : DefaultPollingIntervalSeconds),
+            TimeSpan.FromDays(Math.Clamp(ReadNumber(name: "HISTORY_MAX_AGE_DAYS", DefaultHistoryMaximumDays),
+                min: -1,
+                TimeSpan.MaxValue.TotalDays / 2)),
+            long.CreateSaturating(ReadNumber(name: "HISTORY_MAX_SIZE_MEGABYTES", DefaultHistoryMaximumMegabytes) * BytesPerMegabyte));
     }
 
     private static string? Read(string name)
@@ -42,5 +55,12 @@ internal sealed record EcoFlowConfiguration(Uri AppApiUri, Uri OpenApiUri, Immut
             authentications.Add(new AppAuthentication(username, password));
 
         return [.. authentications];
+    }
+
+    private static double ReadNumber(string name, double defaultValue)
+    {
+        return double.TryParse(Read(name), NumberStyles.Float, CultureInfo.InvariantCulture, out double number) && double.IsFinite(number)
+            ? number
+            : defaultValue;
     }
 }

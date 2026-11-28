@@ -1,6 +1,8 @@
 using EcoFlow.Mqtt.Api.Configuration;
 using EcoFlow.Mqtt.Api.Configuration.Authentication;
 using EcoFlow.Mqtt.Api.Extensions;
+using EcoFlow.Mqtt.Api.History;
+using EcoFlow.Mqtt.Api.Json;
 using EcoFlow.Mqtt.Api.Services;
 
 using Microsoft.AspNetCore.Builder;
@@ -70,7 +72,8 @@ IServiceCollection services = builder.Services
     }))
     .AddSingleton(configuration)
     .AddSingleton(serviceProvider => new InternalHttpApi(configuration, serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient()))
-    .AddSingleton(serviceProvider => new InternalMqttApi(configuration))
+    .AddSingleton(serviceProvider => new DeviceHistory(configuration.HistoryMaximumAge, configuration.HistoryMaximumBytes, InternalMqttApi.UpdatedAtProperty))
+    .AddSingleton(serviceProvider => new InternalMqttApi(configuration, serviceProvider.GetRequiredService<DeviceHistory>()))
     .AddSingleton(serviceProvider => new InternalMqttPolling(configuration, serviceProvider.GetRequiredService<InternalMqttApi>()))
     .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<InternalMqttApi>())
     .AddSingleton(serviceProvider => new InternalMqttConnector(authentication,
@@ -78,10 +81,12 @@ IServiceCollection services = builder.Services
         serviceProvider.GetRequiredService<InternalMqttApi>(),
         serviceProvider.GetRequiredService<InternalMqttPolling>()))
     .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<InternalMqttPolling>())
-    .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<InternalMqttConnector>());
+    .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<InternalMqttConnector>())
+    .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<DeviceHistory>());
 
 WebApplication app = builder.Build();
 InternalMqttApi mqttApi = app.Services.GetRequiredService<InternalMqttApi>();
+DeviceHistory history = app.Services.GetRequiredService<DeviceHistory>();
 
 // Failing here stops the start, so wrong credentials are reported at once instead of being retried forever.
 await app.Services
@@ -106,19 +111,41 @@ RouteHandlerBuilder deviceEndpoint = app.MapGet(pattern: "/{serialNumber}",
     {
         bool isFlat = httpRequest.Query.ContainsKey(key: "flat");
 
-        if (mqttApi.TryGetDevice(serialNumber, out ReadOnlyMemory<byte> state))
-        {
-            return isFlat
+        return mqttApi.TryGetDevice(serialNumber, out ReadOnlyMemory<byte> state)
+            ? isFlat
                 ? Results.Text(string.Join(separator: '\n', JsonNode.Parse(state.Span).Flatten()))
-                : Results.Bytes(state, jsonContentType);
-        }
-
-        string serialNumbers = string.Join(separator: ',', mqttApi.SerialNumbers);
-
-        return Results.Text(isFlat ? serialNumbers : $"Device not found. Existing serial numbers: {serialNumbers}", statusCode: StatusCodes.Status404NotFound);
+                : Results.Bytes(state, jsonContentType)
+            : DeviceNotFound(isFlat);
     });
 
 deviceEndpoint.Add(static endpoint => endpoint.DisplayName = "Single device");
+
+RouteHandlerBuilder historyEndpoint = app.MapGet(pattern: "/history",
+    async () =>
+    {
+        HistoryStatistics statistics = await history.GetStatisticsAsync(DateTimeOffset.UtcNow)
+            .ConfigureAwait(continueOnCapturedContext: false);
+
+        return Results.Json(statistics, ApplicationJsonContext.Default.HistoryStatistics);
+    });
+
+historyEndpoint.Add(static endpoint => endpoint.DisplayName = "History usage");
+
+RouteHandlerBuilder deviceHistoryEndpoint = app.MapGet(pattern: "/{serialNumber}/history",
+    async (HttpRequest httpRequest, string serialNumber) =>
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+
+        return !history.IsEnabled
+            ? Results.Text(content: "History is disabled.", statusCode: StatusCodes.Status404NotFound)
+            : !mqttApi.TryGetDevice(serialNumber, out _)
+                ? DeviceNotFound(httpRequest.Query.ContainsKey(key: "flat"))
+                : !HistoryQuery.TryParse(httpRequest.Query, now, out HistoryQuery? query)
+                    ? Results.Text(content: "Invalid time. Use Unix seconds, or seconds relative to now when not positive.", statusCode: StatusCodes.Status400BadRequest)
+                    : await history.FindAsync(serialNumber, query, now).ConfigureAwait(continueOnCapturedContext: false);
+    });
+
+deviceHistoryEndpoint.Add(static endpoint => endpoint.DisplayName = "Single device history");
 
 using CancellationTokenRegistration startedRegistration = app.Lifetime
     .ApplicationStarted
@@ -131,3 +158,10 @@ using CancellationTokenRegistration startedRegistration = app.Lifetime
 await app.RunAsync().ConfigureAwait(continueOnCapturedContext: false);
 
 return 0;
+
+IResult DeviceNotFound(bool isFlat)
+{
+    string serialNumbers = string.Join(separator: ',', mqttApi.SerialNumbers);
+
+    return Results.Text(isFlat ? serialNumbers : $"Device not found. Existing serial numbers: {serialNumbers}", statusCode: StatusCodes.Status404NotFound);
+}

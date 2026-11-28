@@ -1,6 +1,7 @@
 using EcoFlow.Mqtt.Api.Configuration;
 using EcoFlow.Mqtt.Api.Exceptions;
 using EcoFlow.Mqtt.Api.Extensions;
+using EcoFlow.Mqtt.Api.History;
 using EcoFlow.Mqtt.Api.Models;
 using EcoFlow.Mqtt.Api.Session;
 
@@ -23,7 +24,7 @@ using System.Threading.Channels;
 
 namespace EcoFlow.Mqtt.Api.Services;
 
-internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHostedService
+internal sealed class InternalMqttApi(EcoFlowConfiguration configuration, DeviceHistory history) : IHostedService
 {
     public const string UpdatedAtProperty = "____updatedAtUtcSeconds";
 
@@ -234,14 +235,14 @@ internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHos
         ];
     }
 
-    private static ReadOnlyMemory<byte> Merge(ReadOnlyMemory<byte> state, List<JsonNode> nodes)
+    private static ReadOnlyMemory<byte> Merge(ReadOnlyMemory<byte> state, List<JsonNode> nodes, DateTimeOffset timestamp)
     {
         JsonNode merged = JsonNode.Parse(state.Span) ?? new JsonObject();
 
         foreach (JsonNode node in nodes)
             merged.MergeWith(node);
 
-        merged[UpdatedAtProperty] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        merged[UpdatedAtProperty] = timestamp.ToUnixTimeSeconds();
 
         return Encoding.UTF8.GetBytes(merged.ToJsonString());
     }
@@ -366,14 +367,17 @@ internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHos
         if (nodes.Count is 0)
             return;
 
+        DateTimeOffset timestamp = DateTimeOffset.UtcNow;
+
         // The merge only reads the state it is given, so it is safe to run again if another update got there first.
         DeviceState updatedState = _devices.AddOrUpdate(device.SerialNumber,
             serialNumber => throw new InvalidOperationException(message: $"No subscribed device has the serial number {serialNumber}."),
             (serialNumber, deviceState) => deviceState with
             {
-                State = Merge(deviceState.State, nodes)
+                State = Merge(deviceState.State, nodes, timestamp)
             });
 
+        history.Record(device.SerialNumber, updatedState.State, timestamp);
         Console.WriteLine(value: $"🖥  Updated state for {updatedState.Device}");
     }
 
