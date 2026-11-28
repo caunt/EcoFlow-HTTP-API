@@ -1,7 +1,6 @@
 using EcoFlow.Mqtt.Api.Configuration;
 using EcoFlow.Mqtt.Api.Configuration.Authentication;
 using EcoFlow.Mqtt.Api.Extensions;
-using EcoFlow.Mqtt.Api.Models;
 using EcoFlow.Mqtt.Api.Services;
 
 using Microsoft.AspNetCore.Builder;
@@ -12,8 +11,6 @@ using Microsoft.Extensions.Logging;
 
 using System.Text;
 using System.Text.Json.Nodes;
-
-using ISession = EcoFlow.Mqtt.Api.Session.ISession;
 
 const string jsonContentType = "application/json; charset=utf-8";
 
@@ -40,6 +37,12 @@ if (configuration.Authentications.IsEmpty)
 
     return 1;
 }
+
+IAuthentication authentication = configuration.Authentications.FirstOrDefault(candidate => candidate is AppAuthentication)
+    ?? configuration.Authentications[index: 0];
+
+if (configuration.Authentications.Length > 1)
+    Console.WriteLine(value: $"⚠️ Multiple authentication methods configured. Using the {authentication.GetType().Name}.");
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 
@@ -70,37 +73,21 @@ IServiceCollection services = builder.Services
     .AddSingleton(serviceProvider => new InternalMqttApi(configuration))
     .AddSingleton(serviceProvider => new InternalMqttPolling(configuration, serviceProvider.GetRequiredService<InternalMqttApi>()))
     .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<InternalMqttApi>())
-    .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<InternalMqttPolling>());
+    .AddSingleton(serviceProvider => new InternalMqttConnector(authentication,
+        serviceProvider.GetRequiredService<InternalHttpApi>(),
+        serviceProvider.GetRequiredService<InternalMqttApi>(),
+        serviceProvider.GetRequiredService<InternalMqttPolling>()))
+    .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<InternalMqttPolling>())
+    .AddHostedService(serviceProvider => serviceProvider.GetRequiredService<InternalMqttConnector>());
 
 WebApplication app = builder.Build();
-
-// The services that talk to EcoFlow.
-InternalHttpApi httpApi = app.Services.GetRequiredService<InternalHttpApi>();
 InternalMqttApi mqttApi = app.Services.GetRequiredService<InternalMqttApi>();
-InternalMqttPolling mqttPolling = app.Services.GetRequiredService<InternalMqttPolling>();
 
-IAuthentication authentication = configuration.Authentications.FirstOrDefault(candidate => candidate is AppAuthentication)
-    ?? configuration.Authentications[index: 0];
-
-if (configuration.Authentications.Length > 1)
-    Console.WriteLine(value: $"⚠️ Multiple authentication methods configured. Using the {authentication.GetType().Name}.");
-
-await Console.Out.WriteLineAsync(value: "🔑 Authenticating with EcoFlow...").ConfigureAwait(continueOnCapturedContext: false);
-
-ISession session = await httpApi.AuthenticateAsync(authentication).ConfigureAwait(continueOnCapturedContext: false);
-Device[] devices = await httpApi.GetDevicesAsync(session).ConfigureAwait(continueOnCapturedContext: false);
-
-Console.WriteLine(value: $"📱 Device List: \n\t* {string.Join(separator: "\n\t* ", devices.Select(device => device.ToString()).Order(StringComparer.Ordinal))}");
-
-MqttConfiguration mqttConfiguration = await httpApi.GetMqttConfigurationAsync(session)
+// Failing here stops the start, so wrong credentials are reported at once instead of being retried forever.
+await app.Services
+    .GetRequiredService<InternalMqttConnector>()
+    .ConnectAsync(CancellationToken.None)
     .ConfigureAwait(continueOnCapturedContext: false);
-
-Console.WriteLine(value: $"🔌 Subscribing devices to MQTT ({mqttConfiguration.Url}:{mqttConfiguration.Port})...");
-
-using IDisposable pollingRegistration = mqttPolling.RegisterDevices(mqttConfiguration, devices);
-
-foreach (Device device in devices)
-    await mqttApi.SubscribeDeviceAsync(session, mqttConfiguration, device).ConfigureAwait(continueOnCapturedContext: false);
 
 RouteHandlerBuilder devicesEndpoint = app.MapGet(pattern: "/",
     (HttpRequest httpRequest) =>

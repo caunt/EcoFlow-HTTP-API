@@ -11,6 +11,7 @@ using Google.Protobuf;
 using Microsoft.Extensions.Hosting;
 
 using MQTTnet;
+using MQTTnet.Exceptions;
 
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -18,6 +19,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.Channels;
 
 namespace EcoFlow.Mqtt.Api.Services;
 
@@ -29,12 +31,53 @@ internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHos
 
     private static readonly UTF8Encoding StrictEncoding = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-    private readonly ConcurrentDictionary<ISession, IMqttClient> _clients = [];
+    // The clients whose connection was lost, read by whoever is responsible for connecting again.
+    private readonly Channel<IMqttClient> _disconnections = Channel.CreateUnbounded<IMqttClient>();
 
     // A device state is never changed once it is here: every update puts a new one in its place, so readers need no lock.
     private readonly ConcurrentDictionary<string, DeviceState> _devices = [];
 
+    private IMqttClient? _client;
+
     public IEnumerable<string> SerialNumbers => _devices.Keys.Order(StringComparer.Ordinal);
+
+    // Connects with a new client and subscribes the devices. Called again after a lost connection, it keeps their states.
+    public async Task ConnectAsync(ISession session,
+        MqttConfiguration mqttConfiguration,
+        IReadOnlyCollection<Device> devices,
+        CancellationToken cancellationToken = default)
+    {
+        IMqttClient client = new MqttClientFactory().CreateMqttClient();
+
+        client.ApplicationMessageReceivedAsync += OnApplicationMessageReceivedAsync;
+        client.DisconnectedAsync += eventArguments => _disconnections.Writer.WriteAsync(client, CancellationToken.None).AsTask();
+
+        await ConnectAsync(client, session, mqttConfiguration, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+
+        Interlocked.Exchange(ref _client, client)?.Dispose();
+
+        foreach (Device device in devices)
+        {
+            DeviceState deviceState = _devices.AddOrUpdate(device.SerialNumber,
+                serialNumber => new DeviceState(device, "{}"u8.ToArray()),
+                (serialNumber, deviceState) => deviceState with
+                {
+                    Device = device
+                });
+
+            MqttClientSubscribeOptionsBuilder subscribeOptionsBuilder = new();
+
+            foreach (string topic in GetTopics(session, mqttConfiguration, deviceState.Device))
+                subscribeOptionsBuilder = subscribeOptionsBuilder.WithTopicFilter(topic);
+
+            MqttClientSubscribeResult subscription = await client.SubscribeAsync(subscribeOptionsBuilder.Build(), cancellationToken)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            foreach (MqttClientSubscribeResultItem item in subscription.Items
+                .Where(static item => item.ResultCode > MqttClientSubscribeResultCode.GrantedQoS2))
+                Console.WriteLine(value: $"⚠️ Subscription to {item.TopicFilter.Topic} was refused: {item.ResultCode}");
+        }
+    }
 
     public ReadOnlyMemory<byte> GetDevices()
     {
@@ -58,17 +101,24 @@ internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHos
 
     public async Task SendMessageAsync(Device device, string topic, string payload, CancellationToken cancellationToken)
     {
-        if (!_devices.TryGetValue(device.SerialNumber, out DeviceState? deviceState))
+        // Nothing can be sent while the connection is being restored, the next polling round sends again.
+        if (_client is not { IsConnected: true } client || !_devices.ContainsKey(device.SerialNumber))
             return;
 
         MqttApplicationMessage message = new MqttApplicationMessageBuilder().WithTopic(topic).WithPayload(payload).Build();
 
-        MqttClientPublishResult publication = await deviceState.Client
-            .PublishAsync(message, cancellationToken)
-            .ConfigureAwait(continueOnCapturedContext: false);
+        try
+        {
+            MqttClientPublishResult publication = await client.PublishAsync(message, cancellationToken)
+                .ConfigureAwait(continueOnCapturedContext: false);
 
-        if (!publication.IsSuccess)
-            Console.WriteLine(value: $"⚠️ Failed to publish to {topic}: {publication.ReasonCode}");
+            if (!publication.IsSuccess)
+                Console.WriteLine(value: $"⚠️ Failed to publish to {topic}: {publication.ReasonCode}");
+        }
+        catch (MqttCommunicationException exception)
+        {
+            Console.WriteLine(value: $"⚠️ Failed to publish to {topic}: {exception.Message}");
+        }
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -78,33 +128,11 @@ internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHos
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        foreach (IMqttClient client in _clients.Values)
+        if (Interlocked.Exchange(ref _client, value: null) is not { } client)
+            return;
+
+        using (client)
             await client.DisconnectAsync(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-
-        _clients.Clear();
-        _devices.Clear();
-    }
-
-    public async Task SubscribeDeviceAsync(ISession session, MqttConfiguration mqttConfiguration, Device device, CancellationToken cancellationToken = default)
-    {
-        IMqttClient client = _clients.GetOrAdd(session, CreateClient);
-
-        if (!client.IsConnected)
-            await ConnectAsync(client, session, mqttConfiguration, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-
-        _devices[device.SerialNumber] = new DeviceState(device, client, "{}"u8.ToArray());
-
-        MqttClientSubscribeOptionsBuilder subscribeOptionsBuilder = new();
-
-        foreach (string topic in GetTopics(session, mqttConfiguration, device))
-            subscribeOptionsBuilder = subscribeOptionsBuilder.WithTopicFilter(topic);
-
-        MqttClientSubscribeResult subscription = await client.SubscribeAsync(subscribeOptionsBuilder.Build(), cancellationToken)
-            .ConfigureAwait(continueOnCapturedContext: false);
-
-        foreach (MqttClientSubscribeResultItem item in subscription.Items
-            .Where(static item => item.ResultCode > MqttClientSubscribeResultCode.GrantedQoS2))
-            Console.WriteLine(value: $"⚠️ Subscription to {item.TopicFilter.Topic} was refused: {item.ResultCode}");
     }
 
     public bool TryGetDevice(string serialNumber, out ReadOnlyMemory<byte> state)
@@ -114,6 +142,20 @@ internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHos
         state = deviceState?.State ?? default;
 
         return isKnown;
+    }
+
+    public async Task WaitForDisconnectionAsync(CancellationToken cancellationToken)
+    {
+        IMqttClient disconnectedClient;
+
+        // A client that was replaced in the meantime also reports that it disconnected, only the current one matters.
+        do
+        {
+            disconnectedClient = await _disconnections.Reader
+                .ReadAsync(cancellationToken)
+                .ConfigureAwait(continueOnCapturedContext: false);
+        }
+        while (!ReferenceEquals(disconnectedClient, _client));
     }
 
     private static async Task ConnectAsync(IMqttClient client, ISession session, MqttConfiguration mqttConfiguration, CancellationToken cancellationToken)
@@ -243,15 +285,6 @@ internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHos
         return true;
     }
 
-    private IMqttClient CreateClient(ISession session)
-    {
-        IMqttClient client = new MqttClientFactory().CreateMqttClient();
-
-        client.ApplicationMessageReceivedAsync += OnApplicationMessageReceivedAsync;
-
-        return client;
-    }
-
     private Device GetDevice(string serialNumber)
     {
         return _devices.TryGetValue(serialNumber, out DeviceState? deviceState)
@@ -344,5 +377,5 @@ internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHos
         Console.WriteLine(value: $"🖥  Updated state for {updatedState.Device}");
     }
 
-    private sealed record DeviceState(Device Device, IMqttClient Client, ReadOnlyMemory<byte> State);
+    private sealed record DeviceState(Device Device, ReadOnlyMemory<byte> State);
 }
