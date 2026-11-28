@@ -44,5 +44,10 @@
 	<ItemGroup>
 		<ProjectReference Include="../EcoFlow.Protos/EcoFlow.Protos.csproj" />
 	</ItemGroup>
+
+	<!-- The .NET 11 runtime for Intel macOS holds a pointer the default link rejects: https://github.com/dotnet/runtime/issues/136007 -->
+	<ItemGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
+		<LinkerArg Include="-Wl,-no_fixup_chains" />
+	</ItemGroup>
 	
 </Project>
