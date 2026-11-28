@@ -1,51 +1,59 @@
-﻿using Google.Protobuf;
+using Google.Protobuf;
+
+using CommonHeader = Ecoflow.Cbb.Databus.Proto.Common.Header;
+using CommonHeaders = Ecoflow.Cbb.Databus.Proto.Common.Send_Header_Msg;
+using PlatformHeader = Ecoflow.Wn100Module.Pb.WnCommon.Header;
+using PlatformHeaders = Ecoflow.Wn100Module.Pb.WnCommon.Send_Header_Msg;
 
 namespace EcoFlow.Mqtt.Api.Extensions;
 
-public static class EcoFlowExtensions
+internal static class EcoFlowExtensions
 {
-    extension(Ecoflow.Cbb.Databus.Proto.Common.Send_Header_Msg headers)
-    {
-        public IEnumerable<Ecoflow.Cbb.Databus.Proto.Common.Header> Decrypted
-        {
-            get
-            {
-                foreach (var header in headers.Msg)
-                {
-                    if (header.EncType is 1)
-                        header.Pdata = Decrypt(header.Pdata, header.Seq);
+    private const int EncryptedType = 1;
 
-                    yield return header;
-                }
-            }
-        }
-    }
-
-    extension(Ecoflow.Wn100Module.Pb.WnCommon.Send_Header_Msg headers)
-    {
-        public IEnumerable<Ecoflow.Wn100Module.Pb.WnCommon.Header> Decrypted
-        {
-            get
-            {
-                foreach (var header in headers.Msg)
-                {
-                    if (header.EncType is 1)
-                        header.Pdata = Decrypt(header.Pdata, header.Seq);
-
-                    yield return header;
-                }
-            }
-        }
-    }
-
+    // Payloads are obscured by combining every byte with the low byte of the sequence number of their header.
     private static ByteString Decrypt(ByteString byteString, int sequence)
     {
-        var span = byteString.Span;
-        var xorSpan = (stackalloc byte[span.Length]);
+        byte key = byte.CreateTruncating(sequence);
+        byte[] decrypted = byteString.ToByteArray();
 
-        for (var index = 0; index < span.Length; index++)
-            xorSpan[index] = (byte)(span[index] ^ sequence);
+        for (int index = 0; index < decrypted.Length; index++)
+            decrypted[index] ^= key;
 
-        return ByteString.CopyFrom(xorSpan);
+        return UnsafeByteOperations.UnsafeWrap(decrypted);
+    }
+
+    extension(CommonHeaders headers)
+    {
+        public IEnumerable<CommonHeader> Decrypted
+        {
+            get
+            {
+                foreach (CommonHeader header in headers.Msg)
+                {
+                    if (header.EncType is EncryptedType)
+                        header.Pdata = Decrypt(header.Pdata, header.Seq);
+
+                    yield return header;
+                }
+            }
+        }
+    }
+
+    extension(PlatformHeaders headers)
+    {
+        public IEnumerable<PlatformHeader> Decrypted
+        {
+            get
+            {
+                foreach (PlatformHeader header in headers.Msg)
+                {
+                    if (header.EncType is EncryptedType)
+                        header.Pdata = Decrypt(header.Pdata, header.Seq);
+
+                    yield return header;
+                }
+            }
+        }
     }
 }

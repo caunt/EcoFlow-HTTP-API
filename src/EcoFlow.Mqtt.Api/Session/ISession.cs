@@ -1,3 +1,3 @@
 namespace EcoFlow.Mqtt.Api.Session;
 
-public interface ISession;
+internal interface ISession;

@@ -1,36 +1,41 @@
-﻿using EcoFlow.Exporter.Models;
+using EcoFlow.Exporter.Models;
+
 using System.CommandLine;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-var inputFilePathOption = new Option<FileInfo>("--input", "-i")
+Option<FileInfo> inputFilePathOption = new(name: "--input", aliases: ["-i"])
 {
     Description = "The path to the input .xapk file",
     Required = true
 };
 
-var outputFilePathOption = new Option<FileInfo>("--output", "-o")
+Option<FileInfo> outputFilePathOption = new(name: "--output", aliases: ["-o"])
 {
     Description = "The path to the output .json file",
-    DefaultValueFactory = result => new FileInfo("models.json")
+    DefaultValueFactory = result => new FileInfo(fileName: "models.json")
 };
 
-var rootCommand = new RootCommand("Extracts model set from XAPK file")
+RootCommand rootCommand = [with(description: "Extracts model set from XAPK file"), inputFilePathOption, outputFilePathOption];
+
+JsonSerializerOptions indentedOptions = new()
 {
-    inputFilePathOption,
-    outputFilePathOption
+    WriteIndented = true
 };
 
 rootCommand.SetAction(async (result, cancellationToken) =>
 {
-    var inputFileInfo = result.GetRequiredValue(inputFilePathOption);
-    var outputFileInfo = result.GetRequiredValue(outputFilePathOption);
+    FileInfo inputFile = result.GetRequiredValue(inputFilePathOption);
+    FileInfo outputFile = result.GetRequiredValue(outputFilePathOption);
 
-    var models = await ModelsReader.GetAsync(inputFileInfo.FullName, cancellationToken);
-    await File.WriteAllTextAsync(outputFileInfo.FullName, models.ToJsonString(new JsonSerializerOptions { WriteIndented = true }), cancellationToken);
+    JsonNode models = await ModelsReader.GetAsync(inputFile.FullName, cancellationToken)
+        .ConfigureAwait(continueOnCapturedContext: false);
+
+    await File.WriteAllTextAsync(outputFile.FullName, models.ToJsonString(indentedOptions), cancellationToken)
+        .ConfigureAwait(continueOnCapturedContext: false);
 });
 
-return await rootCommand.Parse(args).InvokeAsync();
-
+return await rootCommand.Parse(args).InvokeAsync().ConfigureAwait(continueOnCapturedContext: false);

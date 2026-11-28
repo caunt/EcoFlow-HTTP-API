@@ -1,8 +1,8 @@
-﻿using HtmlAgilityPack;
+using HtmlAgilityPack;
 
 namespace EcoFlow.Exporter.Models;
 
-public static class Extensions
+internal static class HtmlNodeExtensions
 {
     public static IEnumerable<HtmlNode> SelectNodesOrEmpty(this HtmlNode rootNode, string xpath)
     {

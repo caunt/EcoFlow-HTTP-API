@@ -1,97 +1,85 @@
 ﻿using EcoFlow.Mqtt.Api.Configuration;
 using EcoFlow.Mqtt.Api.Json;
 using EcoFlow.Mqtt.Api.Session;
-using Microsoft.Extensions.Options;
+
 using Nito.AsyncEx;
+
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace EcoFlow.Mqtt.Api.Models;
 
-public class SerialNumberSet(IOptions<EcoFlowConfiguration> options, HttpClient httpClient, ReadOnlyMemory<string> templates)
+internal sealed class SerialNumberSet(EcoFlowConfiguration configuration, HttpClient httpClient, ImmutableArray<string> templates)
 {
+    private const char Wildcard = '-';
+
+    private const int SuffixLength = 4;
+
+    private readonly Dictionary<string, Device> _cache = [];
     private readonly AsyncLock _lock = new();
-    private readonly Dictionary<string, DeviceInfo> _cache = [];
 
-    public async Task<DeviceInfo> GetDeviceInfoAsync(ISession session, string serialNumber, CancellationToken cancellationToken = default)
+    public async Task<Device> GetDeviceAsync(ISession session, string serialNumber, CancellationToken cancellationToken = default)
     {
-        using var disposable = await _lock.LockAsync(cancellationToken);
+        using IDisposable cacheLock = await _lock.LockAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
-        if (!_cache.TryGetValue(serialNumber, out var deviceInfo))
-        {
-            if (!TryMatch(serialNumber, out var pattern))
-                throw new InvalidOperationException($"Serial number '{serialNumber}' does not match any known patterns.");
+        if (_cache.TryGetValue(serialNumber, out Device? device))
+            return device;
 
-            using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(options.Value.AppApiUri, "/app/sku/queryBySnPrefix?sn=" + pattern));
+        if (!TryMatch(serialNumber, out string? pattern))
+            throw new InvalidOperationException(message: $"Serial number '{serialNumber}' does not match any known patterns.");
 
-            var response = await httpClient.SendAsync(request, cancellationToken);
-            response.EnsureSuccessStatusCode();
+        using HttpRequestMessage request = new(HttpMethod.Get,
+            new Uri(configuration.AppApiUri, relativeUri: $"/app/sku/queryBySnPrefix?sn={pattern}"));
 
-            var node = await response.Content.ReadFromJsonAsync(ApplicationJsonContext.Default.JsonNode, cancellationToken);
-            var data = node?["data"]?.AsArray() ?? [];
+        using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken)
+            .ConfigureAwait(continueOnCapturedContext: false);
 
-            if (data.Count is 0)
-                throw new InvalidOperationException($"No device information found for serial number '{serialNumber}'.");
+        string body = await response.EnsureSuccessStatusCode()
+            .Content
+            .ReadAsStringAsync(cancellationToken)
+            .ConfigureAwait(continueOnCapturedContext: false);
 
-            if (data.Count > 1)
-                throw new InvalidOperationException($"Multiple device information entries found for serial number '{serialNumber}'.\n{data}");
+        EcoFlowResponse<IReadOnlyList<ProductEntry>>? products = JsonSerializer.Deserialize(body, ApplicationJsonContext.Default.EcoFlowResponseIReadOnlyListProductEntry);
 
-            var title = data[0]?["name"]?.GetValue<string>();
+        if (products?.Data is not { Count: > 0 } entries)
+            throw new InvalidOperationException(message: $"No device information found for serial number '{serialNumber}'.");
 
-            if (string.IsNullOrWhiteSpace(title))
-                throw new InvalidOperationException($"Device information for serial number '{serialNumber}' does not contain a valid title.\n{data[0]}");
+        if (entries.Count > 1)
+            throw new InvalidOperationException(message: $"Multiple device information entries found for serial number '{serialNumber}'.\n{body}");
 
-            _cache[serialNumber] = deviceInfo = new DeviceInfo(session, serialNumber, title);
-        }
+        string? title = entries[index: 0].Name;
 
-        return deviceInfo;
+        if (string.IsNullOrWhiteSpace(title))
+            throw new InvalidOperationException(message: $"Device information for serial number '{serialNumber}' does not contain a valid title.\n{body}");
+
+        device = new Device(session, serialNumber, title);
+        _cache[serialNumber] = device;
+
+        return device;
     }
 
     public bool TryMatch(string serialNumber, [MaybeNullWhen(false)] out string pattern)
     {
-        pattern = null;
+        // A template masks the characters that differ between devices, and may leave out the last ones altogether.
+        string[] matches = [.. templates.Where(template => IsMatch(serialNumber, template)).Take(count: 2)];
 
-        if (serialNumber is null)
+        pattern = matches is [string match] ? match.TrimEnd(Wildcard) : null;
+
+        return pattern is not null;
+    }
+
+    private static bool IsMatch(string serialNumber, string template)
+    {
+        if (serialNumber.Length != template.Length && serialNumber.Length - SuffixLength != template.Length)
             return false;
 
-        var matchCount = 0;
-        string? potentialMatch = null;
-
-        foreach (var template in templates.Span)
+        for (int characterIndex = 0; characterIndex < template.Length; characterIndex++)
         {
-            if (template is null)
-                continue;
-
-            if (serialNumber.Length != template.Length && serialNumber.Length - 4 != template.Length)
-                continue;
-
-            var isMatch = true;
-
-            for (var characterIndex = 0; characterIndex < template.Length; characterIndex++)
-            {
-                if (template[characterIndex] != '-' && template[characterIndex] != serialNumber[characterIndex])
-                {
-                    isMatch = false;
-                    break;
-                }
-            }
-
-            if (isMatch)
-            {
-                matchCount++;
-                potentialMatch = template;
-
-                if (matchCount > 1)
-                    return false;
-            }
+            if (template[characterIndex] != Wildcard && template[characterIndex] != serialNumber[characterIndex])
+                return false;
         }
 
-        if (matchCount is 1)
-        {
-            pattern = potentialMatch?.TrimEnd('-');
-            return pattern is not null;
-        }
-
-        return false;
+        return true;
     }
 }

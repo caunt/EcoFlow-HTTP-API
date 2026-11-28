@@ -1,38 +1,74 @@
+using EcoFlow.Mqtt.Api.Configuration;
+using EcoFlow.Mqtt.Api.Exceptions;
 using EcoFlow.Mqtt.Api.Extensions;
 using EcoFlow.Mqtt.Api.Models;
 using EcoFlow.Mqtt.Api.Session;
+
+using Ecoflow.Cbb.Databus.Proto.Common;
+
+using Google.Protobuf;
+
 using Microsoft.Extensions.Hosting;
+
 using MQTTnet;
+
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
-using Ecoflow.Cbb.Databus.Proto.Common;
-using EcoFlow.Mqtt.Api.Configuration;
-using EcoFlow.Mqtt.Api.Exceptions;
-using Microsoft.Extensions.Options;
 
 namespace EcoFlow.Mqtt.Api.Services;
 
-public class InternalMqttApi(IOptions<EcoFlowConfiguration> options) : IHostedService
+internal sealed class InternalMqttApi(EcoFlowConfiguration configuration) : IHostedService
 {
-    private static readonly Encoding Encoding = new UTF8Encoding(false, true);
-    private readonly ConcurrentDictionary<ISession, MqttState> _states = [];
+    public const string UpdatedAtProperty = "____updatedAtUtcSeconds";
 
-    public IReadOnlyDictionary<string, JsonNode> Devices
+    private const int MinimumTopicPartCount = 5;
+
+    private static readonly UTF8Encoding StrictEncoding = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
+    private readonly ConcurrentDictionary<ISession, IMqttClient> _clients = [];
+
+    // A device state is never changed once it is here: every update puts a new one in its place, so readers need no lock.
+    private readonly ConcurrentDictionary<string, DeviceState> _devices = [];
+
+    public IEnumerable<string> SerialNumbers => _devices.Keys.Order(StringComparer.Ordinal);
+
+    public ReadOnlyMemory<byte> GetDevices()
     {
-        get
+        ArrayBufferWriter<byte> buffer = new();
+
+        using (Utf8JsonWriter writer = new(buffer))
         {
-            lock (_states)
+            writer.WriteStartObject();
+
+            foreach (KeyValuePair<string, DeviceState> device in _devices.OrderBy(static device => device.Key, StringComparer.Ordinal))
             {
-                return new OrderedDictionary<string, JsonNode>(_states.Values
-                    .SelectMany(state => state.DeviceNodes)
-                    // Snapshot under the lock: nodes are merged concurrently by MQTT handlers, serializing live nodes races with that.
-                    .ToDictionary(state => state.Key.SerialNumber, state => state.Value.DeepClone())
-                    .OrderBy(state => state.Key));
+                writer.WritePropertyName(device.Key);
+                writer.WriteRawValue(device.Value.State.Span, skipInputValidation: true);
             }
+
+            writer.WriteEndObject();
         }
+
+        return buffer.WrittenMemory;
+    }
+
+    public async Task SendMessageAsync(Device device, string topic, string payload, CancellationToken cancellationToken)
+    {
+        if (!_devices.TryGetValue(device.SerialNumber, out DeviceState? deviceState))
+            return;
+
+        MqttApplicationMessage message = new MqttApplicationMessageBuilder().WithTopic(topic).WithPayload(payload).Build();
+
+        MqttClientPublishResult publication = await deviceState.Client
+            .PublishAsync(message, cancellationToken)
+            .ConfigureAwait(continueOnCapturedContext: false);
+
+        if (!publication.IsSuccess)
+            Console.WriteLine(value: $"⚠️ Failed to publish to {topic}: {publication.ReasonCode}");
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -42,246 +78,271 @@ public class InternalMqttApi(IOptions<EcoFlowConfiguration> options) : IHostedSe
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        foreach (var state in _states.Values)
-            await state.Client.DisconnectAsync(cancellationToken: cancellationToken);
+        foreach (IMqttClient client in _clients.Values)
+            await client.DisconnectAsync(cancellationToken: cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
-        _states.Clear();
+        _clients.Clear();
+        _devices.Clear();
     }
 
-    public async Task SubscribeDeviceAsync(ISession session, MqttConfiguration mqttConfiguration, DeviceInfo deviceInfo, CancellationToken cancellationToken = default)
+    public async Task SubscribeDeviceAsync(ISession session, MqttConfiguration mqttConfiguration, Device device, CancellationToken cancellationToken = default)
     {
-        var state = GetMqttState(session);
+        IMqttClient client = _clients.GetOrAdd(session, CreateClient);
 
-        if (!state.Client.IsConnected)
+        if (!client.IsConnected)
+            await ConnectAsync(client, session, mqttConfiguration, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+
+        _devices[device.SerialNumber] = new DeviceState(device, client, "{}"u8.ToArray());
+
+        MqttClientSubscribeOptionsBuilder subscribeOptionsBuilder = new();
+
+        foreach (string topic in GetTopics(session, mqttConfiguration, device))
+            subscribeOptionsBuilder = subscribeOptionsBuilder.WithTopicFilter(topic);
+
+        MqttClientSubscribeResult subscription = await client.SubscribeAsync(subscribeOptionsBuilder.Build(), cancellationToken)
+            .ConfigureAwait(continueOnCapturedContext: false);
+
+        foreach (MqttClientSubscribeResultItem item in subscription.Items
+            .Where(static item => item.ResultCode > MqttClientSubscribeResultCode.GrantedQoS2))
+            Console.WriteLine(value: $"⚠️ Subscription to {item.TopicFilter.Topic} was refused: {item.ResultCode}");
+    }
+
+    public bool TryGetDevice(string serialNumber, out ReadOnlyMemory<byte> state)
+    {
+        bool isKnown = _devices.TryGetValue(serialNumber, out DeviceState? deviceState);
+
+        state = deviceState?.State ?? default;
+
+        return isKnown;
+    }
+
+    private static async Task ConnectAsync(IMqttClient client, ISession session, MqttConfiguration mqttConfiguration, CancellationToken cancellationToken)
+    {
+        string clientId = session is AppSession appSession
+            ? $"ANDROID_{Guid.NewGuid().ToString().ToUpperInvariant()}_{appSession.User.Id}"
+            : "github.com/caunt/EcoFlow-MQTT-API";
+
+        MqttClientOptionsBuilder optionsBuilder = new MqttClientOptionsBuilder().WithTcpServer(mqttConfiguration.Url, mqttConfiguration.Port)
+            .WithCredentials(mqttConfiguration.Username, mqttConfiguration.Password)
+            .WithClientId(clientId);
+
+        if (mqttConfiguration.Tls)
         {
-            var optionsBuilder = new MqttClientOptionsBuilder()
-                .WithTcpServer(mqttConfiguration.Url, mqttConfiguration.Port)
-                .WithCredentials(mqttConfiguration.Username, mqttConfiguration.Password);
+            optionsBuilder = optionsBuilder.WithTlsOptions(new MqttClientTlsOptions
+            {
+                UseTls = true
+            });
+        }
 
-            if (session is AppSession appSessionForClientOptions)
-                optionsBuilder = optionsBuilder.WithClientId($"ANDROID_{Guid.NewGuid().ToString().ToUpper()}_{appSessionForClientOptions.User.Id}");
+        MqttClientConnectResult connection = await client.ConnectAsync(optionsBuilder.Build(), cancellationToken)
+            .ConfigureAwait(continueOnCapturedContext: false);
+
+        if (connection.ResultCode is not MqttClientConnectResultCode.Success)
+            throw new InvalidOperationException(message: $"MQTT broker refused the connection: {connection.ResultCode} {connection.ReasonString}");
+    }
+
+    private static List<JsonNode> DecodeMessages(Device device, ReadOnlySequence<byte> payload)
+    {
+        List<JsonNode> nodes = [];
+
+        if (TryDecode(payload, out string? text))
+        {
+            nodes.Add(JsonNode.Parse(text) is JsonObject envelope && envelope[propertyName: "params"] is JsonNode parameters ? parameters : throw new InvalidOperationException(message: $"Failed to parse JSON payload: {text}"));
+
+            return nodes;
+        }
+
+        foreach (Header header in Send_Header_Msg.Parser.ParseFrom(payload).Decrypted)
+        {
+            IMessage message = header.Pdata.AsEcoFlowMessage(header.CmdFunc, header.CmdId);
+            string messageName = message.GetType().Name;
+            bool isUpload = messageName.EndsWith(value: "PropertyUpload", StringComparison.OrdinalIgnoreCase);
+            bool isHeartBeat = messageName.Contains(value: "HeartBeatReport", StringComparison.OrdinalIgnoreCase);
+
+            if (isUpload || isHeartBeat)
+                nodes.Add(message.ToJson());
             else
-                optionsBuilder = optionsBuilder.WithClientId("github.com/caunt/EcoFlow-MQTT-API");
-
-            if (mqttConfiguration.Tls)
-                optionsBuilder = optionsBuilder.WithTlsOptions(new MqttClientTlsOptions { UseTls = true });
-
-            await state.Client.ConnectAsync(options: optionsBuilder.Build(), cancellationToken);
+                Console.WriteLine(value: $"⚠️ Unsupported binary message received from {device}: {message.ToStringWithTitle()}");
         }
 
-        lock (_states)
-            state.DeviceNodes[deviceInfo] = new JsonObject();
-
-        var subscribeOptionsBuilder = new MqttClientSubscribeOptionsBuilder();
-
-        if (session is AppSession appSession)
-        {
-            subscribeOptionsBuilder = subscribeOptionsBuilder
-                .WithTopicFilter(filter => filter.WithTopic($"/app/device/property/{deviceInfo.SerialNumber}"))
-                .WithTopicFilter(filter => filter.WithTopic($"/app/{appSession.User.Id}/{deviceInfo.SerialNumber}/thing/property/set"))
-                .WithTopicFilter(filter => filter.WithTopic($"/app/{appSession.User.Id}/{deviceInfo.SerialNumber}/thing/property/set_reply"))
-                .WithTopicFilter(filter => filter.WithTopic($"/app/{appSession.User.Id}/{deviceInfo.SerialNumber}/thing/property/get"))
-                .WithTopicFilter(filter => filter.WithTopic($"/app/{appSession.User.Id}/{deviceInfo.SerialNumber}/thing/property/get_reply"));
-        }
-        else
-        {
-            subscribeOptionsBuilder = subscribeOptionsBuilder
-                .WithTopicFilter(filter => filter.WithTopic($"/open/{mqttConfiguration.Username}/{deviceInfo.SerialNumber}/quota"))
-                .WithTopicFilter(filter => filter.WithTopic($"/open/${mqttConfiguration.Username}/${deviceInfo.SerialNumber}/set"))
-                .WithTopicFilter(filter => filter.WithTopic($"/open/${mqttConfiguration.Username}/${deviceInfo.SerialNumber}/set_reply"))
-                .WithTopicFilter(filter => filter.WithTopic($"/open/${mqttConfiguration.Username}/${deviceInfo.SerialNumber}/get"))
-                .WithTopicFilter(filter => filter.WithTopic($"/open/${mqttConfiguration.Username}/${deviceInfo.SerialNumber}/get_reply"));
-        }
-
-        var subscribeOptions = subscribeOptionsBuilder.Build();
-        await state.Client.SubscribeAsync(subscribeOptions, cancellationToken);
+        return nodes;
     }
 
-    public async Task SendMessageAsync(DeviceInfo deviceInfo, string topic, string payload, CancellationToken cancellationToken)
+    private static string Describe(ReadOnlySequence<byte> payload)
     {
-        var message = new MqttApplicationMessageBuilder()
-            .WithTopic(topic)
-            .WithPayload(payload)
-            .Build();
-
-        foreach (var state in _states.Values)
-        {
-            if (!state.DeviceNodes.ContainsKey(deviceInfo))
-                continue;
-
-            await state.Client.PublishAsync(message, cancellationToken);
-        }
+        return TryDecode(payload, out string? text) ? text : Convert.ToHexString(payload.ToArray());
     }
 
-    private MqttState GetMqttState(ISession session)
+    private static string[] GetTopics(ISession session, MqttConfiguration mqttConfiguration, Device device)
     {
-        return _states.GetOrAdd(session, static (_, self) =>
-        {
-            var mqttClientFactory = new MqttClientFactory();
-            var mqttClient = mqttClientFactory.CreateMqttClient();
-
-            mqttClient.ApplicationMessageReceivedAsync += self.OnApplicationMessageReceived;
-
-            return new MqttState(mqttClient, new ConcurrentDictionary<DeviceInfo, JsonNode>(ReferenceEqualityComparer.Instance));
-        }, this);
+        return session is AppSession appSession
+            ? [
+                $"/app/device/property/{device.SerialNumber}",
+                $"/app/{appSession.User.Id}/{device.SerialNumber}/thing/property/set",
+                $"/app/{appSession.User.Id}/{device.SerialNumber}/thing/property/set_reply",
+                $"/app/{appSession.User.Id}/{device.SerialNumber}/thing/property/get",
+                $"/app/{appSession.User.Id}/{device.SerialNumber}/thing/property/get_reply",
+            ]
+            : [
+            $"/open/{mqttConfiguration.Username}/{device.SerialNumber}/quota",
+            $"/open/${mqttConfiguration.Username}/${device.SerialNumber}/set",
+            $"/open/${mqttConfiguration.Username}/${device.SerialNumber}/set_reply",
+            $"/open/${mqttConfiguration.Username}/${device.SerialNumber}/get",
+            $"/open/${mqttConfiguration.Username}/${device.SerialNumber}/get_reply",
+        ];
     }
 
-    private async Task OnApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs eventArgs)
+    private static ReadOnlyMemory<byte> Merge(ReadOnlyMemory<byte> state, List<JsonNode> nodes)
+    {
+        JsonNode merged = JsonNode.Parse(state.Span) ?? new JsonObject();
+
+        foreach (JsonNode node in nodes)
+            merged.MergeWith(node);
+
+        merged[UpdatedAtProperty] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        return Encoding.UTF8.GetBytes(merged.ToJsonString());
+    }
+
+    private static bool TryDecode(ReadOnlySequence<byte> payload, [MaybeNullWhen(false)] out string text)
     {
         try
         {
-            var topic = eventArgs.ApplicationMessage.Topic;
-            var parts = topic.Split('/');
+            text = StrictEncoding.GetString(payload);
 
-            if (parts.Length < 5)
-            {
-                Console.WriteLine($"⚠️ Invalid topic received: {topic}");
-                return;
-            }
-
-            // /app/{userId}/{deviceSerialNumber}/thing/property/get_reply (reply to latestQuotas polling)
-            if (parts is [_, "app", _, var replySerialNumber, "thing", "property", "get_reply"])
-            {
-                if (TryParseLatestQuotas(eventArgs.ApplicationMessage.Payload, out var quotaMap))
-                    UpdateDevice(replySerialNumber, [quotaMap], topic);
-                else if (options.Value.VerboseLogging)
-                    Console.WriteLine($"⚠️ Unknown topic received: {topic} => {(TryParse(eventArgs.ApplicationMessage.Payload, out var replyPayload) ? replyPayload : Convert.ToHexString(eventArgs.ApplicationMessage.Payload.ToArray()))}");
-
-                return;
-            }
-
-            // /app/device/property/{deviceSerialNumber}
-            // /open/{mqttConfiguration.Username}/{deviceSerialNumber}/quota
-
-            var apiType = parts switch
-            {
-                [_, "app", "device", "property", ..] => ApiType.App,
-                [_, "open", _, _, "quota", ..] => ApiType.OpenPlatform,
-                _ => ApiType.Unknown
-            };
-            
-            if (apiType is ApiType.Unknown)
-            {
-                if (options.Value.VerboseLogging)
-                    Console.WriteLine($"⚠️ Unknown topic received: {topic} => {(TryParse(eventArgs.ApplicationMessage.Payload, out var unknownPayload) ? unknownPayload : Convert.ToHexString(eventArgs.ApplicationMessage.Payload.ToArray()))}");
-                
-                return;
-            }
-            
-            var serialNumber = parts[1] switch
-            {
-                "app" => parts[4], 
-                "open" => parts[3],
-                _ => null
-            };
-
-            if (string.IsNullOrWhiteSpace(serialNumber))
-            {
-                Console.WriteLine($"⚠️ Invalid topic received: {topic}");
-                return;
-            }
-
-            var deviceInfo = _states.Values.Select(state => state.DeviceNodes.Keys.Single(device => device.SerialNumber == serialNumber)).Single();
-            var nodes = new List<JsonNode>(1);
-
-            if (TryParse(eventArgs.ApplicationMessage.Payload, out var payload))
-            {
-                nodes.Add(JsonNode.Parse(payload)?["params"] ?? throw new InvalidOperationException($"Failed to parse JSON payload: {payload}"));
-            }
-            else
-            {
-                var headers = Send_Header_Msg.Parser.ParseFrom(eventArgs.ApplicationMessage.Payload);
-
-                foreach (var header in headers.Decrypted)
-                {
-                    var message = header.Pdata.AsEcoFlowMessage(header.CmdFunc, header.CmdId);
-                    var messageName = message.GetType().Name;
-
-                    if (messageName.EndsWith("PropertyUpload", StringComparison.OrdinalIgnoreCase))
-                        nodes.Add(message.ToJson());
-                    else if (messageName.Contains("HeartBeatReport", StringComparison.OrdinalIgnoreCase))
-                        nodes.Add(message.ToJson());
-                    else
-                        Console.WriteLine($"⚠️ Unsupported binary message received from {deviceInfo}: {message.ToStringWithTitle()}");
-                }
-            }
-
-            UpdateDevice(serialNumber, nodes, topic);
-        }
-        catch (Exception exception)
-        {
-            if (!options.Value.VerboseLogging && exception is MessageMultipleMatchesException)
-                return;
-            
-            await Console.Error.WriteLineAsync($"⚠️ Error processing MQTT message: {exception.Message}");
-        }
-
-        return;
-
-        static bool TryParse(ReadOnlySequence<byte> bytes, [MaybeNullWhen(false)] out string value)
-        {
-            try
-            {
-                value = Encoding.GetString(bytes);
-                return true;
-            }
-            catch (DecoderFallbackException)
-            {
-                value = null;
-                return false;
-            }
-        }
-
-        // {"operateType":"latestQuotas","code":"0","data":{"online":1,"quotaMap":{...}}}
-        static bool TryParseLatestQuotas(ReadOnlySequence<byte> bytes, [MaybeNullWhen(false)] out JsonNode quotaMap)
-        {
-            quotaMap = null;
-
-            if (!TryParse(bytes, out var text) || JsonNode.Parse(text) is not JsonObject reply)
-                return false;
-
-            if (reply["operateType"]?.ToString() != "latestQuotas" || reply["code"]?.ToString() != "0")
-                return false;
-
-            // The cloud may answer with the last known quotas of an offline device; don't treat that as fresh data.
-            if (reply["data"] is not JsonObject data || data["online"]?.ToString() == "0")
-                return false;
-
-            if (data["quotaMap"] is not JsonObject map)
-                return false;
-
-            quotaMap = map.DeepClone();
             return true;
+        }
+        catch (DecoderFallbackException)
+        {
+            text = null;
+
+            return false;
         }
     }
 
-    private void UpdateDevice(string serialNumber, IReadOnlyCollection<JsonNode> nodes, string topic)
+    // {"operateType":"latestQuotas","code":"0","data":{"online":1,"quotaMap":{...}}}
+    private static bool TryParseLatestQuotas(ReadOnlySequence<byte> payload, [MaybeNullWhen(false)] out JsonNode quotaMap)
+    {
+        quotaMap = null;
+
+        if (!TryDecode(payload, out string? text) || JsonNode.Parse(text) is not JsonObject reply)
+            return false;
+
+        if (reply[propertyName: "operateType"]?.ToString() is not "latestQuotas" || reply[propertyName: "code"]?.ToString() is not "0")
+            return false;
+
+        // The cloud may answer with the last known quotas of an offline device; don't treat that as fresh data.
+        if (reply[propertyName: "data"] is not JsonObject data || data[propertyName: "online"]?.ToString() is "0")
+            return false;
+
+        if (data[propertyName: "quotaMap"] is not JsonObject map)
+            return false;
+
+        quotaMap = map.DeepClone();
+
+        return true;
+    }
+
+    private IMqttClient CreateClient(ISession session)
+    {
+        IMqttClient client = new MqttClientFactory().CreateMqttClient();
+
+        client.ApplicationMessageReceivedAsync += OnApplicationMessageReceivedAsync;
+
+        return client;
+    }
+
+    private Device GetDevice(string serialNumber)
+    {
+        return _devices.TryGetValue(serialNumber, out DeviceState? deviceState)
+            ? deviceState.Device
+            : throw new InvalidOperationException(message: $"No subscribed device has the serial number {serialNumber}.");
+    }
+
+    private void HandleMessage(string topic, ReadOnlySequence<byte> payload)
+    {
+        string[] parts = topic.Split(separator: '/');
+
+        if (parts.Length < MinimumTopicPartCount)
+        {
+            Console.WriteLine(value: $"⚠️ Invalid topic received: {topic}");
+
+            return;
+        }
+
+        // /app/{userId}/{deviceSerialNumber}/thing/property/get_reply (reply to latestQuotas polling)
+        if (parts is [_, "app", _, string replySerialNumber, "thing", "property", "get_reply"])
+        {
+            if (TryParseLatestQuotas(payload, out JsonNode? quotaMap))
+                Update(GetDevice(replySerialNumber), nodes: [quotaMap]);
+            else if (configuration.VerboseLogging)
+                Console.WriteLine(value: $"⚠️ Unknown topic received: {topic} => {Describe(payload)}");
+
+            return;
+        }
+
+        // /app/device/property/{deviceSerialNumber}
+        // /open/{mqttConfiguration.Username}/{deviceSerialNumber}/quota
+        string? serialNumber = parts switch
+        {
+            [_, "app", "device", "property", string appSerialNumber, ..] => appSerialNumber,
+            [_, "open", _, string openSerialNumber, "quota", ..] => openSerialNumber,
+            _ => null
+        };
+
+        if (serialNumber is null)
+        {
+            if (configuration.VerboseLogging)
+                Console.WriteLine(value: $"⚠️ Unknown topic received: {topic} => {Describe(payload)}");
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(serialNumber))
+        {
+            Console.WriteLine(value: $"⚠️ Invalid topic received: {topic}");
+
+            return;
+        }
+
+        Device device = GetDevice(serialNumber);
+
+        Update(device, DecodeMessages(device, payload));
+    }
+
+    private async Task OnApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs eventArguments)
+    {
+        try
+        {
+            HandleMessage(eventArguments.ApplicationMessage.Topic, eventArguments.ApplicationMessage.Payload);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            // One payload that cannot be understood must not stop the ones that follow it.
+            if (configuration.VerboseLogging || exception is not MessageMultipleMatchesException)
+            {
+                await Console.Error
+                    .WriteLineAsync(value: $"⚠️ Error processing MQTT message: {exception.Message}")
+                    .ConfigureAwait(continueOnCapturedContext: false);
+            }
+        }
+    }
+
+    private void Update(Device device, List<JsonNode> nodes)
     {
         if (nodes.Count is 0)
             return;
 
-        var deviceInfo = _states.Values.Select(state => state.DeviceNodes.Keys.Single(device => device.SerialNumber == serialNumber)).Single();
-        var updated = false;
-
-        foreach (var state in _states.Values)
-        {
-            if (!state.DeviceNodes.TryGetValue(deviceInfo, out var deviceNode))
-                continue;
-
-            lock (_states)
+        // The merge only reads the state it is given, so it is safe to run again if another update got there first.
+        DeviceState updatedState = _devices.AddOrUpdate(device.SerialNumber,
+            serialNumber => throw new InvalidOperationException(message: $"No subscribed device has the serial number {serialNumber}."),
+            (serialNumber, deviceState) => deviceState with
             {
-                foreach (var node in nodes)
-                {
-                    deviceNode.MergeWith(node);
+                State = Merge(deviceState.State, nodes)
+            });
 
-                    deviceNode["____updatedAtUtcSeconds"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    updated = true;
-                }
-            }
-        }
-
-        Console.WriteLine(updated ? $"🖥  Updated state for {deviceInfo}" : $"⚠️ No devices found for update: {topic} at {DateTime.Now:hh:mm:ss} => {string.Join("\n", nodes)}");
+        Console.WriteLine(value: $"🖥  Updated state for {updatedState.Device}");
     }
 
-    private record MqttState(IMqttClient Client, ConcurrentDictionary<DeviceInfo, JsonNode> DeviceNodes);
+    private sealed record DeviceState(Device Device, IMqttClient Client, ReadOnlyMemory<byte> State);
 }

@@ -1,3 +1,16 @@
 namespace EcoFlow.Mqtt.Api.Exceptions;
 
-public abstract class InternalApiException(string message) : Exception(message);
+internal abstract class InternalApiException : Exception
+{
+    protected InternalApiException()
+    {
+    }
+
+    protected InternalApiException(string message) : base(message)
+    {
+    }
+
+    protected InternalApiException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+}

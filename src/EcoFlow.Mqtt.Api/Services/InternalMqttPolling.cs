@@ -1,113 +1,94 @@
-﻿using EcoFlow.Mqtt.Api.Models;
-using EcoFlow.Mqtt.Api.Session;
-using Microsoft.Extensions.Hosting;
-using System.Globalization;
 using EcoFlow.Mqtt.Api.Configuration;
-using Microsoft.Extensions.Options;
+using EcoFlow.Mqtt.Api.Models;
+using EcoFlow.Mqtt.Api.Session;
+
+using Microsoft.Extensions.Hosting;
+
+using Nito.Disposables;
+
+using System.Collections.Immutable;
+using System.Globalization;
 
 namespace EcoFlow.Mqtt.Api.Services;
 
-public class InternalMqttPolling(IOptions<EcoFlowConfiguration> options, InternalMqttApi mqttApi) : BackgroundService
+internal sealed class InternalMqttPolling(EcoFlowConfiguration configuration, InternalMqttApi mqttApi) : BackgroundService
 {
-    private record CallbackDisposable(Action Action) : IDisposable
+    private const int FirstSequence = 1000;
+    private const int SequenceCount = 9000;
+
+    private ImmutableDictionary<Device, MqttConfiguration> _devices = [];
+    private long _sequence = -1;
+
+    public IDisposable RegisterDevices(MqttConfiguration mqttConfiguration, IReadOnlyCollection<Device> devices)
     {
-        public void Dispose() => Action.Invoke();
+        _devices = _devices.SetItems(devices.Select(device => KeyValuePair.Create(device, mqttConfiguration)));
+
+        return Disposable.Create(() => _devices = _devices.RemoveRange(devices));
     }
 
-    private int _incrementingCounter = 1000;
-    private readonly Lock _lock = new();
-    private readonly Dictionary<DeviceInfo, MqttConfiguration> _devices = [];
-
-    public IDisposable RegisterDevices(MqttConfiguration mqttConfiguration, params DeviceInfo[] devices)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        lock (_devices)
-        {
-            foreach (var device in devices)
-                _devices[device] = mqttConfiguration;
-        }
-
-        return new CallbackDisposable(() =>
-        {
-            lock (_devices)
-            {
-                foreach (var device in devices)
-                    _devices.Remove(device);
-            }
-        });
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
-    {
-        var pollingInterval = options.Value.PollingInterval;
+        TimeSpan pollingInterval = configuration.PollingInterval;
 
         if (pollingInterval <= TimeSpan.Zero)
         {
-            Console.WriteLine("⚠️ Polling interval is disabled.");
+            await Console.Out
+                .WriteLineAsync("⚠️ Polling interval is disabled.".AsMemory(), stoppingToken)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
             return;
         }
 
-        using var periodicTimer = new PeriodicTimer(pollingInterval);
+        using PeriodicTimer periodicTimer = new(pollingInterval);
 
         do
         {
-            if (cancellationToken.IsCancellationRequested)
+            if (stoppingToken.IsCancellationRequested)
                 break;
 
-            await SendAsync(cancellationToken);
+            await SendAsync(stoppingToken).ConfigureAwait(continueOnCapturedContext: false);
         }
-        while (await periodicTimer.WaitForNextTickAsync(cancellationToken));
+        while (await periodicTimer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(continueOnCapturedContext: false));
     }
 
-    private async Task SendAsync(CancellationToken cancellationToken = default)
+    // Five digits of the current time followed by four of a counter, like the identifiers the official app sends.
+    private string CreateId()
     {
-        var keys = _devices.Keys;
+        long sequence = FirstSequence + (Interlocked.Increment(ref _sequence) % SequenceCount);
 
-        for (var i = keys.Count - 1; i >= 0; i--)
+        return $"{DateTime.Now.ToString(format: "ssfff", CultureInfo.InvariantCulture)}{sequence.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private async Task SendAsync(CancellationToken cancellationToken)
+    {
+        foreach (KeyValuePair<Device, MqttConfiguration> registration in _devices)
         {
-            var device = keys.ElementAt(i);
-            var mqttConfiguration = _devices[device];
-            
-            var topic = device.Session switch
+            Device device = registration.Key;
+
+            string topic = device.Session switch
             {
                 AppSession appSession => $"/app/{appSession.User.Id}/{device.SerialNumber}/thing/property/set",
-                OpenSession => $"/open/${mqttConfiguration.Username}/${device.SerialNumber}/set",
-                _ => throw new NotSupportedException($"Unsupported session type: {device.Session}")
+                OpenSession => $"/open/${registration.Value.Username}/${device.SerialNumber}/set",
+                _ => throw new NotSupportedException(message: $"Unsupported session type: {device.Session}")
             };
-            
-            var payload = $$"""{"params":{},"operateType":"getAllTaskCfg","from":"Android","lang":"en-us","id":"{{CreateId()}}","moduleSn":"{{device.SerialNumber}}","moduleType":1,"version":"1.0"}""";
-            await mqttApi.SendMessageAsync(device, topic, payload, cancellationToken);
+
+            string payload = $$"""{"params":{},"operateType":"getAllTaskCfg","from":"Android","lang":"en-us","id":"{{CreateId()}}","moduleSn":"{{device.SerialNumber}}","moduleType":1,"version":"1.0"}""";
+
+            await mqttApi.SendMessageAsync(device, topic, payload, cancellationToken)
+                .ConfigureAwait(continueOnCapturedContext: false);
 
             // Devices only stream /app/device/property/{sn} for ~120s after the official app wakes them.
             // Request a full snapshot the same way the app does; the reply arrives on .../thing/property/get_reply.
             if (device.Session is AppSession quotasSession)
             {
-                var quotasTopic = $"/app/{quotasSession.User.Id}/{device.SerialNumber}/thing/property/get";
-                var quotasPayload = $$"""{"from":"Android","operateType":"latestQuotas","id":"{{CreateId()}}","lang":"en-us","params":{},"version":"1.0"}""";
-                await mqttApi.SendMessageAsync(device, quotasTopic, quotasPayload, cancellationToken);
+                string quotasTopic = $"/app/{quotasSession.User.Id}/{device.SerialNumber}/thing/property/get";
+                string quotasPayload = $$"""{"from":"Android","operateType":"latestQuotas","id":"{{CreateId()}}","lang":"en-us","params":{},"version":"1.0"}""";
+
+                await mqttApi.SendMessageAsync(device, quotasTopic, quotasPayload, cancellationToken)
+                    .ConfigureAwait(continueOnCapturedContext: false);
             }
 
-            Console.WriteLine($"📡 Sent polling message to {device}");
+            Console.WriteLine(value: $"📡 Sent polling message to {device}");
         }
-    }
-
-    private string CreateId()
-    {
-        using var lockScope = _lock.EnterScope();
-
-        var formattedDateString = $"{DateTime.Now:ssfff}";
-        var currentIncrement = _incrementingCounter++;
-
-        if (currentIncrement >= 9999)
-        {
-            _incrementingCounter = 1001;
-            currentIncrement = 1000;
-        }
-
-        var generatedIdentifier = formattedDateString + currentIncrement;
-
-        if (generatedIdentifier.Length > 9)
-            return generatedIdentifier[^9..];
-
-        return generatedIdentifier;
     }
 }

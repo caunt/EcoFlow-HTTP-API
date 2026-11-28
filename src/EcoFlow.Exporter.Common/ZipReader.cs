@@ -1,60 +1,74 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 
 namespace EcoFlow.Exporter.Common;
 
+/// <summary>
+/// Reads the files of a ZIP archive together with the files of every archive nested inside it, such as the APKs of an XAPK.
+/// </summary>
 public static class ZipReader
 {
-    public static IEnumerable<(string FilePath, Stream FileStream)> EnumerateFilesRecursively(string zipFilePath, Predicate<string>? filterPredicate = null)
-    {
-        using var rootFileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read);
+    private static ReadOnlySpan<byte> ZipHeader => [0x50, 0x4B, 0x03, 0x04];
 
-        foreach (var result in EnumerateZipStream(rootFileStream, Path.GetFileName(zipFilePath), filterPredicate))
-            yield return result;
+    /// <summary>
+    /// Enumerates the files of a ZIP archive, descending into every file that is itself a ZIP archive.
+    /// </summary>
+    /// <param name="zipFilePath">The path of the archive to open for reading.</param>
+    /// <param name="filterPredicate">
+    /// Decides by its path whether a file is returned. Every file is returned when it is <see langword="null"/>. Nested archives are
+    /// always searched, whatever the predicate says about them.
+    /// </param>
+    /// <returns>
+    /// The matching files, each uncompressed into memory when the enumeration reaches it. The archive stays open until the
+    /// enumeration ends.
+    /// </returns>
+    public static IEnumerable<ZipFileEntry> EnumerateFilesRecursively(string zipFilePath, Predicate<string>? filterPredicate = null)
+    {
+        using FileStream rootFileStream = new(zipFilePath, FileMode.Open, FileAccess.Read);
+
+        foreach (ZipFileEntry entry in EnumerateZipStream(rootFileStream, Path.GetFileName(zipFilePath), filterPredicate))
+            yield return entry;
     }
 
-    private static IEnumerable<(string FilePath, Stream FileStream)> EnumerateZipStream(Stream inputStream, string parentPath, Predicate<string>? filterPredicate)
+    private static IEnumerable<ZipFileEntry> EnumerateZipStream(Stream inputStream, string parentPath, Predicate<string>? filterPredicate)
     {
-        using var zipArchive = new ZipArchive(inputStream, ZipArchiveMode.Read, leaveOpen: true);
+        using ZipArchive zipArchive = new(inputStream, ZipArchiveMode.Read, leaveOpen: true);
 
-        foreach (var zipArchiveEntry in zipArchive.Entries)
+        foreach (ZipArchiveEntry zipArchiveEntry in zipArchive.Entries)
         {
             if (string.IsNullOrEmpty(zipArchiveEntry.Name))
                 continue;
 
-            var fullEntryPath = Path.Combine(parentPath, zipArchiveEntry.FullName);
+            string fullEntryPath = Path.Combine(parentPath, zipArchiveEntry.FullName);
+            MemoryStream uncompressedStream = new();
 
-            var uncompressedStream = new MemoryStream();
-
-            using (var entryStream = zipArchiveEntry.Open())
+            using (Stream entryStream = zipArchiveEntry.Open())
                 entryStream.CopyTo(uncompressedStream);
 
             uncompressedStream.Position = 0;
 
             if (IsZipHeader(uncompressedStream))
             {
-                foreach (var nestedResult in EnumerateZipStream(uncompressedStream, fullEntryPath, filterPredicate))
-                    yield return nestedResult;
+                foreach (ZipFileEntry nestedEntry in EnumerateZipStream(uncompressedStream, fullEntryPath, filterPredicate))
+                    yield return nestedEntry;
             }
-            else
+            else if (filterPredicate is null || filterPredicate(fullEntryPath))
             {
-                if (filterPredicate is null || filterPredicate(fullEntryPath))
-                {
-                    uncompressedStream.Position = 0;
-                    yield return (fullEntryPath, uncompressedStream);
-                }
+                yield return new ZipFileEntry(fullEntryPath, uncompressedStream);
             }
         }
     }
 
     private static bool IsZipHeader(Stream stream)
     {
-        if (stream.Length < 4)
+        if (stream.Length < ZipHeader.Length)
             return false;
 
-        var buffer = (stackalloc byte[4]);
-        stream.ReadExactly(buffer);
+        Span<byte> header = stackalloc byte[ZipHeader.Length];
+
+        stream.ReadExactly(header);
+
         stream.Position = 0;
 
-        return buffer[0] == 0x50 && buffer[1] == 0x4B && buffer[2] == 0x03 && buffer[3] == 0x04;
+        return header.SequenceEqual(ZipHeader);
     }
 }

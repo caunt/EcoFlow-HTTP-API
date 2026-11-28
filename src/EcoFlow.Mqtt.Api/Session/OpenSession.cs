@@ -1,31 +1,36 @@
 using EcoFlow.Mqtt.Api.Configuration.Authentication;
+
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace EcoFlow.Mqtt.Api.Session;
 
-public record OpenSession(OpenAuthentication Authentication) : ISession
+internal sealed record OpenSession(OpenAuthentication Authentication) : ISession
 {
+    private const int NonceLimit = 1_000_000;
+
     public void SignRequest(HttpRequestMessage httpRequestMessage)
     {
-        var timestampMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-        var nonce = RandomNumberGenerator.GetInt32(0, 1_000_000 /* 6 digits limit */).ToString("D6");
+        string timestampMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture);
 
-        var signatureSource = $"accessKey={Authentication.AccessKey}&nonce={nonce}&timestamp={timestampMilliseconds}";
-        var signature = HMACSHA256.HashData(Authentication.SecretKeyBytes, Encoding.UTF8.GetBytes(signatureSource));
-        var signatureHex = Convert.ToHexString(signature);
-        signatureHex = signatureHex.ToLowerInvariant();
+        string nonce = RandomNumberGenerator.GetInt32(fromInclusive: 0, NonceLimit)
+            .ToString(format: "D6", CultureInfo.InvariantCulture);
 
-        if (!httpRequestMessage.Headers.TryAddWithoutValidation("accessKey", Authentication.AccessKey))
-            throw new InvalidOperationException("Failed to add accessKey header.");
+        string signatureSource = $"accessKey={Authentication.AccessKey}&nonce={nonce}&timestamp={timestampMilliseconds}";
 
-        if (!httpRequestMessage.Headers.TryAddWithoutValidation("timestamp", timestampMilliseconds))
-            throw new InvalidOperationException("Failed to add timestamp header.");
+        byte[] signature = HMACSHA256.HashData(Encoding.UTF8.GetBytes(Authentication.SecretKey),
+            Encoding.UTF8.GetBytes(signatureSource));
 
-        if (!httpRequestMessage.Headers.TryAddWithoutValidation("nonce", nonce))
-            throw new InvalidOperationException("Failed to add nonce header.");
+        AddHeader(httpRequestMessage, name: "accessKey", Authentication.AccessKey);
+        AddHeader(httpRequestMessage, name: "timestamp", timestampMilliseconds);
+        AddHeader(httpRequestMessage, name: "nonce", nonce);
+        AddHeader(httpRequestMessage, name: "sign", Convert.ToHexStringLower(signature));
+    }
 
-        if (!httpRequestMessage.Headers.TryAddWithoutValidation("sign", signatureHex))
-            throw new InvalidOperationException("Failed to add signature header.");
+    private static void AddHeader(HttpRequestMessage httpRequestMessage, string name, string value)
+    {
+        if (!httpRequestMessage.Headers.TryAddWithoutValidation(name, value))
+            throw new InvalidOperationException(message: $"Failed to add {name} header.");
     }
 }
